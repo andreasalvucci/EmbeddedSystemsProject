@@ -9,7 +9,7 @@ import org.chromium.net.UrlResponseInfo;
 import java.nio.ByteBuffer;
 
 public class MyUrlRequestCallback extends UrlRequest.Callback{
-    private static final String TAG = "MyUrlRequestCallback";
+    private static final String TAG = MyUrlRequestCallback.class.getSimpleName();
 
     @Override
     public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
