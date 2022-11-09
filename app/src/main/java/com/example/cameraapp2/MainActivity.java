@@ -41,6 +41,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -110,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Toolbar toolbar;
     CronetEngine cronetEngine;
 
+    private Handler handler;
+
     //private RectOverlay rectOverlay;
     //Canvas rectCanvas;
 
@@ -124,6 +127,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //rectCanvas = new Canvas();
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
          cronetEngine = myBuilder.build();
+
+        handler = new Handler(getMainLooper());
 
         pview = findViewById(R.id.viewFinder);
         cropArea = findViewById(R.id.crop_area);
@@ -374,7 +379,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(getApplicationContext(),nomeFermata,Toast.LENGTH_SHORT).show();
 
-                cropArea.setBackground(MainActivity.this.getResources().getDrawable(R.drawable.rectangle_round_corners_green));
+                cropArea.setBackground(MainActivity.this.getResources()
+                        .getDrawable(R.drawable.rectangle_round_corners_green));
+
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        cropArea.setBackground(MainActivity.this.getResources()
+                                .getDrawable(R.drawable.rectangle_round_corners_red));
+                    }
+                },3000);
                 if(busCodeScanning){
                     Executor executor = Executors.newSingleThreadExecutor();
                     UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(
@@ -391,6 +405,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
+
+
     @SuppressLint("UnsafeOptInUsageError")
     @Override
     public void analyze(@NonNull ImageProxy imageProxy) {
