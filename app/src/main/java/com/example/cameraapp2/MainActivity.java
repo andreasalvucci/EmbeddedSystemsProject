@@ -361,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void runInference(Bitmap image){
-        Boolean busCodeScanning = switch1.isChecked();
+        Boolean busCodeScanning = !switch1.isChecked();
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         InputImage inputImage = InputImage.fromBitmap(image,0);
 
@@ -369,6 +369,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         Integer stopNumber = recognizer1.getStopNumber(new RecognizerCallback() {
+            @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public void onCallBack(String stopName) {
                 Log.wtf("message","recognized word: "+stopName);
