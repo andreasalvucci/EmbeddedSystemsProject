@@ -35,6 +35,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -107,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ProgressBar progressBar;
     Switch switch1;
     Toolbar toolbar;
-    ImageView infoImage;
     CronetEngine cronetEngine;
 
     //private RectOverlay rectOverlay;
@@ -135,8 +135,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch1 = findViewById(R.id.switch3);
         toolbar = findViewById(R.id.toolbar);
         toolbar.setVisibility(View.VISIBLE);
-        infoImage = findViewById(R.id.imageView);
-        infoImage.setVisibility(View.VISIBLE);
         //rectOverlay = findViewById(R.id.rectOverlay);
         //rectOverlay.drawOverlay(rectCanvas);
 
@@ -375,6 +373,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("Fermata",nomeFermata);
                 progressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(getApplicationContext(),nomeFermata,Toast.LENGTH_SHORT).show();
+
+                cropArea.setBackground(MainActivity.this.getResources().getDrawable(R.drawable.rectangle_round_corners_green));
                 if(busCodeScanning){
                     Executor executor = Executors.newSingleThreadExecutor();
                     UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(
