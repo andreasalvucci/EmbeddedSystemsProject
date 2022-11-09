@@ -3,13 +3,7 @@ package com.example.cameraapp2;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
@@ -20,53 +14,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Recognizer {
-    private TextRecognizer recognizer;
-    private InputImage inputImage;
+    private final TextRecognizer textRecognizer;
+    private final InputImage inputImage;
 
-    public Recognizer(Bitmap image){
-        recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        inputImage = InputImage.fromBitmap(image,0);
+    public Recognizer(Bitmap image) {
+        textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        inputImage = InputImage.fromBitmap(image, 0);
     }
 
-    public int getStopNumber(RecognizerCallback myCallback){
-        if(recognizer==null){
+    public int getStopNumber(RecognizerCallback myCallback) {
+        if (textRecognizer == null) {
             return -1;
         }
+
         int stopNumber = 0;
-        recognizer.process(inputImage).addOnSuccessListener(new OnSuccessListener<Text>() {
-            @Override
-            public void onSuccess(Text text) {
-                List<String> tutteLeParole = getWordsFromText(text);
-                String parolaDaEsaminare = "";
-                for (String parola:tutteLeParole
-                     ) {
-                    parolaDaEsaminare+=parola;
-                    Log.d("parola da esaminare",parolaDaEsaminare);
-                    //if(isAllUpper(parola) && parola.matches("[A-Z]+"))
-                }
 
-                        myCallback.onCallBack(parolaDaEsaminare);
+        textRecognizer.process(inputImage).addOnSuccessListener(text -> {
+            List<String> allWords = getWordsFromText(text);
+            StringBuilder wordToExamineBuilder = new StringBuilder();
+
+            for (String word : allWords) {
+                wordToExamineBuilder.append(word);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-            }
+            String wordToExamine = wordToExamineBuilder.toString();
+
+            myCallback.onCallBack(wordToExamine);
+        }).addOnFailureListener(e -> {
         });
-
-
-
 
         return stopNumber;
     }
 
     private static boolean isAllUpper(String s) {
-        for(char c : s.toCharArray()) {
-            if(Character.isLetter(c) && Character.isLowerCase(c)) {
+        for (char c : s.toCharArray()) {
+            if (Character.isLetter(c) && Character.isLowerCase(c)) {
                 return false;
             }
         }
         return true;
     }
+
     private List<String> getWordsFromText(Text text) {
         String resultText = text.getText();
         List<String> parole = new ArrayList<>();
@@ -91,7 +78,7 @@ public class Recognizer {
                 }
             }
         }
-return parole;
 
+        return parole;
     }
 }

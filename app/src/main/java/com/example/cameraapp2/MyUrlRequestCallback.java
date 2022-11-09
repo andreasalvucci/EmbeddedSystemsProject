@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MyUrlRequestCallback extends UrlRequest.Callback{
-    private static final String TAG = "MyUrlRequestCallback";
+    private static final String TAG = MyUrlRequestCallback.class.getSimpleName();
 
     public String responseBody;
 

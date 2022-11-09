@@ -5,4 +5,6 @@
     <string name="HOST">https://tper-backend.herokuapp.com</string>
     <string name="PORT">3000</string>
     <string name="infoText">Se il codice della fermata non è presente, premi questo bottone e scansiona il nome della fermata</string>
+    <string name="tper_dictionary_separator">;</string>
+    <string name="non_existent_bus_stop">FERMATA NON ESISTENTE</string>
 </resources>

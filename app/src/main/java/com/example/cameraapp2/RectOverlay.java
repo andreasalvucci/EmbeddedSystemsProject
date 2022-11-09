@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -13,10 +12,8 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 
-
 public class RectOverlay extends View {
-
-    private Paint paint;
+    private final Paint paint;
 
     public RectOverlay(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -27,27 +24,23 @@ public class RectOverlay extends View {
         paint.setStyle(Paint.Style.STROKE);
     }
 
-
-    public void drawOverlay(Canvas canvas){
+    public void drawOverlay(Canvas canvas) {
         canvas.drawColor(Color.RED);
         invalidate();
-
-
     }
+
     @Override
-    protected  void onDraw(Canvas canvas){
-        int canvasW = canvas.getWidth();
-        int canvasH = canvas.getHeight();
-        Point centerOfCanvas = new Point(canvasW / 2, canvasH / 2);
+    protected void onDraw(Canvas canvas) {
+        int canvasW = getWidth() / 2;
+        int canvasH = getHeight() / 2;
         int rectW = 700;
         int rectH = 300;
-        int left = centerOfCanvas.x - (rectW / 2);
-        int top = centerOfCanvas.y - (rectH / 2);
-        int right = centerOfCanvas.x + (rectW / 2);
-        int bottom = centerOfCanvas.y + (rectH / 2);
-        Log.d("WidthxHeight", String.valueOf(canvasW)+"x"+String.valueOf(canvasH));
+        int left = canvasW - (rectW / 2);
+        int top = canvasH - (rectH / 2);
+        int right = canvasW + (rectW / 2);
+        int bottom = canvasH + (rectH / 2);
+        Log.d("WidthxHeight", "" + canvasW + "x" + canvasH);
         Rect rect = new Rect(left, top, right, bottom);
         canvas.drawRect(rect, paint);
-
     }
 }
