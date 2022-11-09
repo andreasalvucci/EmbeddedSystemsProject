@@ -391,8 +391,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 },3000);
                 if(busCodeScanning){
                     Executor executor = Executors.newSingleThreadExecutor();
-                    UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(
-                            R.string.HOST+":"+R.string.PORT+"/fermata/"+stopName, new MyUrlRequestCallback(), executor);
+                    String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
+                    Log.d("LASTRING",url);
+                    UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
+                            , new MyUrlRequestCallback(), executor);
                     UrlRequest request = requestBuilder.build();
                     request.start();
 

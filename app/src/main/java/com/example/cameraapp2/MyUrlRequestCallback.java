@@ -6,6 +6,7 @@ import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 public class MyUrlRequestCallback extends UrlRequest.Callback{
@@ -30,9 +31,12 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     }
 
     @Override
-    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
+    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws UnsupportedEncodingException {
         Log.i(TAG, "onReadCompleted method called.");
         // You should keep reading the request until there's no more data.
+        String response = new String(byteBuffer.array(),"ASCII");
+        Log.d(TAG,response);
+
         byteBuffer.clear();
         request.read(byteBuffer);
     }
