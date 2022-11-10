@@ -31,6 +31,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/infoText"
+        android:textColor="@color/design_default_color_on_secondary"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/switch3"
@@ -41,6 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="32dp"
+        android:shadowColor="@color/design_default_color_on_secondary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

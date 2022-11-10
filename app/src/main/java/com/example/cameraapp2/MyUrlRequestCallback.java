@@ -30,8 +30,10 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     public String responseBody;
     private Context context;
     private FragmentManager supportFragmentManager;
-    public MyUrlRequestCallback(FragmentManager fm){
+    private String stopName;
+    public MyUrlRequestCallback(FragmentManager fm, String stopName){
         this.supportFragmentManager=fm;
+        this.stopName = stopName;
     }
 
 
@@ -94,7 +96,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         } catch (JSONException e ) {
             e.printStackTrace();
         }
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString));
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString),this.stopName);
         bottomSheetDialog.show(supportFragmentManager,"ModalBottomSheet");
 
     }

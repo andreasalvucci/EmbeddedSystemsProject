@@ -12,13 +12,17 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 public class BottomSheetDialog extends BottomSheetDialogFragment {
     private String autobusJSON;
     private List<List<String>> listaAutobus;
-    public BottomSheetDialog(List<List<String>> lista){
+    private String stopName;
+    public BottomSheetDialog(List<List<String>> lista, String stopName){
         this.listaAutobus=lista;
+        this.stopName = stopName;
     }
 
     @Override
@@ -29,10 +33,12 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
                 container, false);
 
         Button button_chiudi = v.findViewById(R.id.button_chiudi);
+        TextView nome_fermata = v.findViewById(R.id.nome_fermata);
         TextView codice_bus1 = v.findViewById(R.id.codice_bus_1);
         TextView codice_bus_2 = v.findViewById(R.id.codice_bus_2);
         TextView orario_bus_1 = v.findViewById(R.id.orario_bus_1);
         TextView orario_bus_2 = v.findViewById(R.id.orario_bus_2);
+        nome_fermata.setText(stopName);
 
         codice_bus1.setText(listaAutobus.get(0).get(0));
         orario_bus_1.setText(listaAutobus.get(0).get(1));
