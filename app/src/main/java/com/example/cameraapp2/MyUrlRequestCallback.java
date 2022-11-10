@@ -1,17 +1,26 @@
 package com.example.cameraapp2;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+
+import androidx.fragment.app.FragmentManager;
 
 import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.JSONParser.*;
+import org.json.simple.parser.ParseException;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +28,11 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     private static final String TAG = MyUrlRequestCallback.class.getSimpleName();
 
     public String responseBody;
+    private Context context;
+    private FragmentManager supportFragmentManager;
+    public MyUrlRequestCallback(FragmentManager fm){
+        this.supportFragmentManager=fm;
+    }
 
 
 
@@ -42,7 +56,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     }
 
     @Override
-    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws UnsupportedEncodingException, JSONException {
+    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws UnsupportedEncodingException, JSONException, ParseException {
         Log.i(TAG, "onReadCompleted method called.");
         // You should keep reading the request until there's no more data.
 
@@ -57,10 +71,12 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         }
 
         String responseBodyString = new String(bytes);
+
      //Convert bytes to string
 
         //Properly format the response String
         responseBodyString = responseBodyString.trim().replaceAll("(\r\n|\n\r|\r|\n|\r0|\n0)", "");
+        Log.d("RESPONSEBODYSTRING",responseBodyString);
         if (responseBodyString.endsWith("0")) {
             responseBodyString = responseBodyString.substring(0, responseBodyString.length()-1);
         }
@@ -73,12 +89,14 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
 
         JSONObject results = new JSONObject();
         try {
-            results.put("headers", reqHeaders);
+           // results.put("headers", reqHeaders);
             results.put("body", responseBodyString);
         } catch (JSONException e ) {
             e.printStackTrace();
         }
-        Log.d(TAG, results.get("body").toString());
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString));
+        bottomSheetDialog.show(supportFragmentManager,"ModalBottomSheet");
+
     }
 
     @Override
@@ -150,5 +168,29 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         public void onFinishRequest(JSONObject result);
 
     }
+
+    private List<List<String>> getMapFromJson(String jsonString) throws JSONException, ParseException {
+
+        List<List<String>> lista = new ArrayList<>();
+        Log.i("JSONinviato",jsonString);
+        JSONObject json = new JSONObject(jsonString);
+        JSONObject message = json.getJSONObject("message");
+        JSONArray buses = message.getJSONArray("Autobus");
+
+
+        for(int i=0; i<buses.length();i++){
+            String line = buses.getJSONObject(i).getString("Line");
+            String time = buses.getJSONObject(i).getString("Time");
+            List<String> lineAndTime = new ArrayList<>();
+            lineAndTime.add(line);
+            lineAndTime.add(time);
+            lista.add(lineAndTime);
+
+        }
+
+return lista;
+    }
+
+
 
 }

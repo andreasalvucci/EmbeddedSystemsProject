@@ -14,6 +14,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.*;
 
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageCapture imageCapture;
     private ImageAnalysis imageAnalysis;
     ProgressBar progressBar;
-    Switch switch1;
+    SwitchMaterial switch1;
     Toolbar toolbar;
     CronetEngine cronetEngine;
 
@@ -367,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
                     Log.d("LASTRING",url);
                     UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                            , new MyUrlRequestCallback(), executor);
+                            , new MyUrlRequestCallback(getSupportFragmentManager()), executor);
                     UrlRequest request = requestBuilder.build();
                     request.start();
 
@@ -399,64 +400,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageProxy.close();
 
 
-    }
-    public static String executeGet(String targetURL, String urlParameters) {
-        HttpURLConnection connection = null;
-
-        try {
-            //Create connection
-            URL url = new URL(targetURL);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-Type",
-                    "application/x-www-form-urlencoded");
-
-            connection.setRequestProperty("Content-Length",
-                    Integer.toString(urlParameters.getBytes().length));
-            connection.setRequestProperty("Content-Language", "en-US");
-
-            connection.setUseCaches(false);
-            connection.setDoOutput(true);
-
-            //Send request
-            DataOutputStream wr = new DataOutputStream(
-                    connection.getOutputStream());
-            wr.writeBytes(urlParameters);
-            wr.close();
-
-            //Get Response
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
-            String line;
-            while ((line = rd.readLine()) != null) {
-                response.append(line);
-                response.append('\r');
-            }
-            rd.close();
-            return response.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
-
-    private Rect getCroppingRect(Canvas canvas){
-        int canvasW = canvas.getWidth();
-        int canvasH = canvas.getHeight();
-        Point centerOfCanvas = new Point(canvasW / 2, canvasH / 2);
-        int rectW = 700;
-        int rectH = 300;
-        int left = centerOfCanvas.x - (rectW / 2);
-        int top = centerOfCanvas.y - (rectH / 2);
-        int right = centerOfCanvas.x + (rectW / 2);
-        int bottom = centerOfCanvas.y + (rectH / 2);
-        Rect rect = new Rect(left, top, right, bottom);
-        return rect;
     }
 
     private Bitmap toBitmap(@NonNull ImageProxy image) {
