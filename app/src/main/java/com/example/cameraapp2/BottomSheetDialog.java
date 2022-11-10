@@ -12,9 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import java.sql.Time;
 import java.util.List;
-import java.util.Map;
 
 public class BottomSheetDialog extends BottomSheetDialogFragment {
     private String autobusJSON;
@@ -30,26 +28,19 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         View v = inflater.inflate(R.layout.bottom_sheet_layout,
                 container, false);
 
-        Button algo_button = v.findViewById(R.id.algo_button);
-        Button course_button = v.findViewById(R.id.course_button);
-        TextView autobus1 = v.findViewById(R.id.autobus1);
-        TextView autobus2 = v.findViewById(R.id.autobus2);
+        Button button_chiudi = v.findViewById(R.id.button_chiudi);
+        TextView codice_bus1 = v.findViewById(R.id.codice_bus_1);
+        TextView codice_bus_2 = v.findViewById(R.id.codice_bus_2);
+        TextView orario_bus_1 = v.findViewById(R.id.orario_bus_1);
+        TextView orario_bus_2 = v.findViewById(R.id.orario_bus_2);
 
-        autobus1.setText(listaAutobus.get(0).get(0)+":"+listaAutobus.get(0).get(1));
-        autobus2.setText(listaAutobus.get(1).get(0)+":"+listaAutobus.get(1).get(1));
+        codice_bus1.setText(listaAutobus.get(0).get(0));
+        orario_bus_1.setText(listaAutobus.get(0).get(1));
 
-        algo_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-                Toast.makeText(getActivity(),
-                                "Algorithm Shared", Toast.LENGTH_SHORT)
-                        .show();
-                dismiss();
-            }
-        });
+        codice_bus_2.setText(listaAutobus.get(1).get(0));
+        orario_bus_2.setText(listaAutobus.get(1).get(1));
 
-        course_button.setOnClickListener(new View.OnClickListener() {
+        button_chiudi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
             {

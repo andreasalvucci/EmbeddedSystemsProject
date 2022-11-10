@@ -7,31 +7,85 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/autobus1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This is a Modal BottomSheet"
-        android:textSize="25sp" />
-    <TextView
-        android:id="@+id/autobus2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This is a Modal BottomSheet"
-        android:textSize="25sp" />
+    <TableLayout
+        android:id="@+id/table_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/codice_bus_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="33"
+                android:textSize="25sp" />
+
+            <Space
+                android:layout_width="30dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="in arrivo alle" />
+
+            <Space
+                android:layout_width="30dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/orario_bus_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:03"
+                android:textSize="30sp" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/codice_bus_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="34"
+                android:textSize="25sp" />
+
+            <Space
+                android:layout_width="30dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="in arrivo alle" />
+
+            <Space
+                android:layout_width="30dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/orario_bus_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:30"
+                android:textSize="30sp" />
+        </TableRow>
+
+    </TableLayout>
 
     <Button
-        android:layout_margin="10dp"
-        android:id="@+id/algo_button"
+        android:id="@+id/button_chiudi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Share this Algorithm" />
-
-    <Button
         android:layout_margin="10dp"
-        android:id="@+id/course_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Share this Course" />
+        android:text="Chiudi" />
 
 </LinearLayout>
