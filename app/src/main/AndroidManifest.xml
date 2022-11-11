@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.Dark"
+        android:theme="@style/AppTheme"
         tools:targetApi="31">
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
@@ -20,6 +20,7 @@
         <!-- To use multiple models: android:value="ocr,model2,model3" -->
 
         <activity
+            android:screenOrientation="portrait"
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

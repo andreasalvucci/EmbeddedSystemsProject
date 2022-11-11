@@ -1,6 +1,7 @@
 package com.example.cameraapp2;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -14,6 +15,8 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.*;
@@ -21,6 +24,7 @@ import com.google.mlkit.vision.text.*;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -95,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             requestPermission();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getSupportActionBar().hide();
+        //getSupportActionBar().hide();
 
         //rectCanvas = new Canvas();
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
@@ -254,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //Toast.makeText(getApplicationContext(), "Picture Taken", Toast.LENGTH_SHORT).show();
                     Log.d("INFO", "PICTURE TAKEN");
                     progressBar.setVisibility(View.VISIBLE);
+                    cropArea.setVisibility(View.INVISIBLE);
                     runInference(croppedPhotoBitmap);
 
                 }
@@ -345,33 +350,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public void onCallBack(String stopName) {
-                Log.wtf("message","recognized word: "+stopName);
-                TperUtilities tper = new TperUtilities(getApplicationContext());
-                Log.d("NUMERO", String.valueOf(stopName));
-                String nomeFermata = tper.getMoreSimilarBusStop(stopName);
-                Log.d("Fermata",nomeFermata);
-                progressBar.setVisibility(View.INVISIBLE);
-                Toast.makeText(getApplicationContext(),nomeFermata,Toast.LENGTH_SHORT).show();
 
-                cropArea.setBackground(MainActivity.this.getResources()
-                        .getDrawable(R.drawable.rectangle_round_corners_green));
+                TperUtilities tperUtilities = new TperUtilities(MainActivity.this);
 
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        cropArea.setBackground(MainActivity.this.getResources()
-                                .getDrawable(R.drawable.rectangle_round_corners_red));
+                /*
+                We check whether the numerical code of the bus stop exists. If it doesn't, we cannot go further
+                and we notify the user.
+                 */
+                if(busCodeScanning && !tperUtilities.codeIsBusStop(stopName)){
+                    progressBar.setVisibility(View.INVISIBLE);
+                    cropArea.setVisibility(View.VISIBLE);
+                    if(!isFinishing())
+                        showBusStopNotExistingDialog();
+                }
+                else{
+                    Log.wtf("message","recognized word: "+stopName);
+                    TperUtilities tper = new TperUtilities(getApplicationContext());
+                    Log.d("NUMERO", String.valueOf(stopName));
+                    String nomeFermata = tper.getMoreSimilarBusStop(stopName);
+                    Log.d("Fermata",nomeFermata);
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Toast.makeText(getApplicationContext(),nomeFermata,Toast.LENGTH_SHORT).show();
+                    cropArea.setVisibility(View.VISIBLE);
+                    cropArea.setBackground(MainActivity.this.getResources()
+                            .getDrawable(R.drawable.rectangle_round_corners_green));
+
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            cropArea.setBackground(MainActivity.this.getResources()
+                                    .getDrawable(R.drawable.rectangle_round_corners_red));
+                        }
+                    },3000);
+                    if(busCodeScanning){
+                        Executor executor = Executors.newSingleThreadExecutor();
+                        String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
+                        Log.d("LASTRING",url);
+                        UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
+                                , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName))), executor);
+                        UrlRequest request = requestBuilder.build();
+                        request.start();
                     }
-                },3000);
-                if(busCodeScanning){
-                    Executor executor = Executors.newSingleThreadExecutor();
-                    String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
-                    Log.d("LASTRING",url);
-                    UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                            , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName))), executor);
-                    UrlRequest request = requestBuilder.build();
-                    request.start();
-
 
 
                 }
@@ -408,6 +427,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         bitmapBuffer.copyPixelsFromBuffer(image.getPlanes()[0].getBuffer());
         return bitmapBuffer;
+    }
+
+    private void showBusStopNotExistingDialog(){
+        new MaterialAlertDialogBuilder(MainActivity.this, R.style.AppTheme)
+                .setTitle("Attenzione")
+                .setIcon(R.drawable.ic_baseline_error_24)
+                .setMessage(R.string.non_existent_bus_stop_code)
+                .setPositiveButton("OK", null)
+                .setNegativeButton("Aiuto", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        showBusStopCodeTutorial();
+                    }
+                })
+                .show();
+
+    }
+    private void showBusStopCodeTutorial(){
+        Toast.makeText(getApplicationContext(),"Aiuto premuto", Toast.LENGTH_SHORT).show();
     }
 
 

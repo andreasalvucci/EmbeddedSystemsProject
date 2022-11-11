@@ -13,17 +13,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="206dp"
-        tools:layout_editor_absoluteY="10dp">
-
-    </androidx.camera.view.PreviewView>
+        tools:layout_editor_absoluteY="10dp"/>
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
+        android:theme="@style/AppTheme"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -42,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="32dp"
-        android:shadowColor="@color/design_default_color_on_secondary"
+        android:shadowColor="@color/design_default_color_secondary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -67,14 +64,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!--
-    <com.example.cameraapp2.RectOverlay
-        android:id="@+id/rectOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
--->
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/image_capture_button"
         android:layout_width="110dp"
         android:layout_height="110dp"
@@ -86,7 +77,7 @@
         app:layout_constraintEnd_toStartOf="@id/vertical_centerline"
         app:layout_constraintLeft_toLeftOf="parent" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/video_capture_button"
         android:layout_width="110dp"
         android:layout_height="110dp"

@@ -33,6 +33,21 @@ public class TperUtilities {
         return stopName;
     }
 
+    public Boolean codeIsBusStop(String busStopCodeString){
+        int code=0;
+        try{
+            code = Integer.parseInt(busStopCodeString);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            Log.e("EXCEPTION",e.toString());
+            return false;
+        }
+        if(busStopDictionary.containsKey(code))
+            return true;
+        else return false;
+    }
+
     private Boolean isBusStop(String aPossibleBusStop) {
         return busStopDictionary.containsValue(aPossibleBusStop);
     }

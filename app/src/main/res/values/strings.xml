@@ -7,4 +7,6 @@
     <string name="infoText">Se il codice della fermata non è presente, premi questo bottone e scansiona il nome della fermata</string>
     <string name="tper_dictionary_separator">;</string>
     <string name="non_existent_bus_stop">FERMATA NON ESISTENTE</string>
+    <string name="non_existent_bus_stop_code">La scansione risulta invalida oppure
+        il codice della fermata non esiste. Fai tap su Aiuto per scoprire come scansionare il codice della fermata</string>
 </resources>
