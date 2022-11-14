@@ -5,24 +5,31 @@ import android.content.res.Resources;
 import android.util.Log;
 
 import org.apache.commons.lang3.StringUtils;
+import org.osmdroid.util.GeoPoint;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TperUtilities {
     private static final String TAG = TperUtilities.class.getSimpleName();
     private final Map<Integer, String> busStopDictionary;
+    private  Map<Integer,GeoPoint> coordinates;
     Context context;
 
     public TperUtilities(Context context) {
         this.context = context;
         busStopDictionary = loadData(context);
+
     }
 
     public String getBusStopByCode(int code) {
@@ -33,7 +40,21 @@ public class TperUtilities {
         return stopName;
     }
 
-    public Boolean codeIsBusStop(String busStopCodeString){
+    public GeoPoint getGeoPointByCode(int code){
+        return coordinates.get(code);
+    }
+
+    public List<GeoPoint> getCoupleOfCoordinatesByStopName(String stopName) {
+        List<Integer> codes = getCodesByStopName(getMoreSimilarBusStop(stopName));
+        List<GeoPoint> points = new ArrayList<>();
+
+        for(int code : codes){
+            points.add(getGeoPointByCode(code));
+        }
+        return points;
+    }
+
+        public Boolean codeIsBusStop(String busStopCodeString){
         int code=0;
         try{
             code = Integer.parseInt(busStopCodeString);
@@ -80,6 +101,7 @@ public class TperUtilities {
 
     public Map<Integer, String> loadData(Context context) {
         Map<Integer, String> busStopList = new HashMap<>();
+        coordinates = new HashMap<>();
 
         try {
             Resources res = context.getResources();
@@ -93,6 +115,10 @@ public class TperUtilities {
                 String[] data = actualLine.split(context.getString(R.string.tper_dictionary_separator));
                 Integer stopCode = Integer.valueOf(data[0]);
                 String stopName = data[1];
+                Double latitude = Double.parseDouble(data[6].replace(",","."));
+                Double longitude = Double.parseDouble(data[7].replace(",","."));
+                GeoPoint stopGeoPoint = new GeoPoint(latitude,longitude);
+                coordinates.put(stopCode,stopGeoPoint);
                 busStopList.put(stopCode, stopName);
             }
 
@@ -107,5 +133,14 @@ public class TperUtilities {
             Log.d(TAG, e.toString());
         }
         return Collections.emptyMap();
+    }
+    public List<Integer> getCodesByStopName(String stopName){
+        List<Integer> codes = new ArrayList<>();
+        for(Integer code : busStopDictionary.keySet()){
+            if(stopName.equals(busStopDictionary.get(code))){
+                codes.add(code);
+            }
+        }
+        return codes;
     }
 }

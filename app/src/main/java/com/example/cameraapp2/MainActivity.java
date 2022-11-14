@@ -37,6 +37,7 @@ import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
 import android.view.View;
@@ -52,6 +53,10 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UrlRequest;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -67,6 +72,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -100,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //getSupportActionBar().hide();
+        Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
 
         //rectCanvas = new Canvas();
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
@@ -180,13 +187,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private boolean checkPermission(){
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
         return false;
         }
         return true;
     }
 
     private void requestPermission(){
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
     public void onRequestPermissionResult(int requestCode, String permissions[], int[] grantResults){
@@ -390,6 +398,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName))), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
+                    }
+                    else{
+
+                        List<GeoPoint> coordinateFermate = tper.getCoupleOfCoordinatesByStopName(stopName);
+                        List<Integer> codiciFermate = tper.getCodesByStopName(tper.getMoreSimilarBusStop(stopName));
+
+                        MapBottomSheetDialog mapBottomSheetDialog = new MapBottomSheetDialog(getApplicationContext(),coordinateFermate,codiciFermate);
+                        mapBottomSheetDialog.show(getSupportFragmentManager(),"ModalBottomSheet");
                     }
 
 
