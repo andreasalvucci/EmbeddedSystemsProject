@@ -40,6 +40,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -75,10 +76,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ImageAnalysis.Analyzer{
-
     private static final int PERMISSION_REQUEST_CODE = 0 ;
     private ListenableFuture<ProcessCameraProvider> provider;
     private Bitmap bitmapBuffer;
@@ -93,11 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     SwitchMaterial switch1;
     Toolbar toolbar;
     CronetEngine cronetEngine;
-
     private Handler handler;
-
-    //private RectOverlay rectOverlay;
-    //Canvas rectCanvas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +99,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             requestPermission();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //getSupportActionBar().hide();
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
 
-        //rectCanvas = new Canvas();
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
          cronetEngine = myBuilder.build();
 
@@ -124,8 +116,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch1 = findViewById(R.id.switch3);
         toolbar = findViewById(R.id.toolbar);
         toolbar.setVisibility(View.VISIBLE);
-        //rectOverlay = findViewById(R.id.rectOverlay);
-        //rectOverlay.drawOverlay(rectCanvas);
 
 
         picture_bt.setOnClickListener(this);
@@ -155,19 +145,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return ContextCompat.getMainExecutor(this);
     }
 
+
+
     private void startCamera(ProcessCameraProvider cameraProvider){
         cameraProvider.unbindAll();
         CameraSelector cameraSelector = new CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build();
-
         Preview preview = new Preview.Builder().build();
-
         ViewPort viewPort = pview.getViewPort();
-
-
-
-
         preview.setSurfaceProvider(pview.getSurfaceProvider());
         imageCapture = new ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
@@ -180,9 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addUseCase(imageCapture)
                 .addUseCase(imageAnalysis)
                 .build();
-
         cameraProvider.bindToLifecycle(this,cameraSelector, useCaseGroup);
-
     }
 
     private boolean checkPermission(){
@@ -234,41 +218,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onCaptureSuccess(@NonNull ImageProxy image) {
                 super.onCaptureSuccess(image);
-                /*
-                ContentValues newPictureDetails = new ContentValues();
-                newPictureDetails.put(MediaStore.Images.Media._ID, pictureName);
-                newPictureDetails.put(MediaStore.Images.Media.ORIENTATION, String.valueOf(image.getImageInfo().getRotationDegrees()));
-                newPictureDetails.put(MediaStore.Images.Media.DISPLAY_NAME, pictureName);
-                newPictureDetails.put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg");
-                newPictureDetails.put(MediaStore.Images.Media.WIDTH, image.getWidth());
-                newPictureDetails.put(MediaStore.Images.Media.HEIGHT, image.getHeight());
-                newPictureDetails.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_DCIM+"/sistemidigitali");
-                OutputStream stream = null;*/
+
                 try{
-                    /*Uri picturePublicUri = getApplicationContext()
-                            .getContentResolver()
-                            .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, newPictureDetails);
-                    stream = getApplicationContext().getContentResolver().openOutputStream(picturePublicUri);*/
                     Bitmap bitmapImage = convertImageProxyToBitmap(image);
-                   /* Rect croppingRect = getCroppingRect(rectCanvas);
-                    assert(croppingRect.left < croppingRect.right && croppingRect.top < croppingRect.bottom);
-                    Bitmap resized = Bitmap.createScaledBitmap(bitmapImage, 1080, 1993, true);
-                    Bitmap croppedBmp = Bitmap.createBitmap(resized, 190, 1146, 700, 300);*
-//  draw source bitmap into resulting image at given position:
-                    new Canvas().drawBitmap(bitmapImage, -croppingRect.left, -croppingRect.top, null);*/
                     byte[] croppedPhoto = cropImage(bitmapImage,pview,cropArea);
                     Bitmap croppedPhotoBitmap = BitmapFactory.decodeByteArray(croppedPhoto,0,croppedPhoto.length);
-                    //if(!croppedPhotoBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)){
 
-                    //}
                     image.close();
-                    //stream.close();
-                    //Toast.makeText(getApplicationContext(), "Picture Taken", Toast.LENGTH_SHORT).show();
-                    Log.d("INFO", "PICTURE TAKEN");
                     progressBar.setVisibility(View.VISIBLE);
                     cropArea.setVisibility(View.INVISIBLE);
                     runInference(croppedPhotoBitmap);
-
                 }
                 catch(Exception e){
                     e.printStackTrace();
@@ -366,6 +325,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 and we notify the user.
                  */
                 if(busCodeScanning && !tperUtilities.codeIsBusStop(stopName)){
+                    Log.d("NUMERO", "Numero non esistente");
                     progressBar.setVisibility(View.INVISIBLE);
                     cropArea.setVisibility(View.VISIBLE);
                     if(!isFinishing())
@@ -419,23 +379,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         // altrimenti facciamo scegliere all'utente una determinata fermata
                         else {
-
                             MapBottomSheetDialog mapBottomSheetDialog = new MapBottomSheetDialog(getApplicationContext(), coordinateFermate, codiciFermate, tper);
                             mapBottomSheetDialog.show(getSupportFragmentManager(), "ModalBottomSheet");
                         }
                     }
-
-
                 }
-
-
-
             }
         });
     }
-
-
-
     @SuppressLint("UnsafeOptInUsageError")
     @Override
     public void analyze(@NonNull ImageProxy imageProxy) {
@@ -481,7 +432,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void showBusStopCodeTutorial(){
         Toast.makeText(getApplicationContext(),"Aiuto premuto", Toast.LENGTH_SHORT).show();
     }
-
-
-
-}
+    }
