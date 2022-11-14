@@ -404,8 +404,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         List<GeoPoint> coordinateFermate = tper.getCoupleOfCoordinatesByStopName(stopName);
                         List<Integer> codiciFermate = tper.getCodesByStopName(tper.getMoreSimilarBusStop(stopName));
 
-                        MapBottomSheetDialog mapBottomSheetDialog = new MapBottomSheetDialog(getApplicationContext(),coordinateFermate,codiciFermate, tper);
-                        mapBottomSheetDialog.show(getSupportFragmentManager(),"ModalBottomSheet");
+                        /* se esiste una sola fermata che si chiama così, allora è inutile far scegliere all'utente un
+                            marcatore sulla mappa, facciamo partire subito la richiesta
+                             */
+                        if(codiciFermate.size()==1){
+                            int codice = codiciFermate.get(0);
+                            Executor executor = Executors.newSingleThreadExecutor();
+                            String url = "https://tper-backend.herokuapp.com/fermata/"+codice;
+                            Log.d("LASTRING",url);
+                            UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
+                                    , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice)), executor);
+                            UrlRequest request = requestBuilder.build();
+                            request.start();
+                        }
+                        // altrimenti facciamo scegliere all'utente una determinata fermata
+                        else {
+
+                            MapBottomSheetDialog mapBottomSheetDialog = new MapBottomSheetDialog(getApplicationContext(), coordinateFermate, codiciFermate, tper);
+                            mapBottomSheetDialog.show(getSupportFragmentManager(), "ModalBottomSheet");
+                        }
                     }
 
 
@@ -416,6 +433,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
+
 
 
     @SuppressLint("UnsafeOptInUsageError")

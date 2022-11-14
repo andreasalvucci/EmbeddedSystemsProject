@@ -54,9 +54,6 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
-        Log.d("COORDINATE",punti.get(0).toString());
-        Log.d("COORDINATE", punti.get(1).toString());
-
         int i = 0;
         for (i = 0; i<coordinate.size();i++){
             int codice= codici.get(i);
