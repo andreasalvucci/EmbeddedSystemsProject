@@ -43,12 +43,14 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private MapView mapView;
     private List<GeoPoint> punti;
     private List<Integer> codes;
+    private TperUtilities tper;
     private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
 
-    public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici){
+    public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
         this.context = context;
         this.punti = coordinate;
         this.codes = codici;
+        this.tper = tper;
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
@@ -90,13 +92,14 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
 
                         int code = Integer.valueOf(item.getTitle());
+                        String stopName = tper.getBusStopByCode(code);
                         Toast.makeText(context,"Cliccato", Toast.LENGTH_SHORT).show();
 
                         Executor executor = Executors.newSingleThreadExecutor();
                         String url = "https://tper-backend.herokuapp.com/fermata/"+code;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),"11"), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                         //do something

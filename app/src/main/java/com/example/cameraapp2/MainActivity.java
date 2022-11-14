@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         List<GeoPoint> coordinateFermate = tper.getCoupleOfCoordinatesByStopName(stopName);
                         List<Integer> codiciFermate = tper.getCodesByStopName(tper.getMoreSimilarBusStop(stopName));
 
-                        MapBottomSheetDialog mapBottomSheetDialog = new MapBottomSheetDialog(getApplicationContext(),coordinateFermate,codiciFermate);
+                        MapBottomSheetDialog mapBottomSheetDialog = new MapBottomSheetDialog(getApplicationContext(),coordinateFermate,codiciFermate, tper);
                         mapBottomSheetDialog.show(getSupportFragmentManager(),"ModalBottomSheet");
                     }
 

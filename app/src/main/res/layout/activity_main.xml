@@ -8,12 +8,19 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="206dp"
-        tools:layout_editor_absoluteY="10dp"/>
+        tools:layout_editor_absoluteY="10dp" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
