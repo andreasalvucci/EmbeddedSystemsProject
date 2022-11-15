@@ -6,9 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.FocusMeteringAction;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.core.MeteringPoint;
+import androidx.camera.core.MeteringPointFactory;
 import androidx.camera.core.Preview;
 import androidx.camera.core.UseCaseGroup;
 import androidx.camera.core.ViewPort;
@@ -44,6 +47,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
+import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
@@ -195,6 +199,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build();
         Camera camera = cameraProvider.bindToLifecycle(this,cameraSelector, useCaseGroup);
         CameraControl cameraControl = camera.getCameraControl();
+
+        pview.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                MeteringPointFactory factory = pview.getMeteringPointFactory();
+                MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
+                FocusMeteringAction action = new FocusMeteringAction.Builder(point).build();
+                cameraControl.startFocusAndMetering(action);
+                return false;
+            }
+        });
 
         zoomInButton.setOnClickListener(new View.OnClickListener() {
             @Override
