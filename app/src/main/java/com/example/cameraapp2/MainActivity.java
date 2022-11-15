@@ -35,6 +35,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.location.GnssAntennaInfo;
 import android.media.Image;
 import android.os.Build;
@@ -96,8 +97,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar toolbar;
     private CronetEngine cronetEngine;
     private Handler handler;
-    private SeekBar zoomSeekBar;
     private TextView slideToZoomTextView;
+    private Button zoomInButton;
+    private Button zoomOutButton;
+    private Button torchButton;
+    private boolean torchIsOn = false;
+
+    private final float ZOOM_STEP = 0.1f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,11 +114,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
 
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
-         cronetEngine = myBuilder.build();
+        cronetEngine = myBuilder.build();
+
+        zoomInButton = findViewById(R.id.zoomInbutton);
+        zoomOutButton = findViewById(R.id.zoomOutButton);
+        torchButton = findViewById(R.id.torchButton);
+
 
 
         handler = new Handler(getMainLooper());
-        zoomSeekBar = findViewById(R.id.zoomSeekBar);
         slideToZoomTextView = findViewById(R.id.slideToZoomTextView);
 
         pview = findViewById(R.id.viewFinder);
@@ -186,25 +196,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Camera camera = cameraProvider.bindToLifecycle(this,cameraSelector, useCaseGroup);
         CameraControl cameraControl = camera.getCameraControl();
 
-        zoomSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        zoomInButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                System.out.println(i);
-                cameraControl.setZoomRatio(i/10);
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
+            public void onClick(View view) {
+                float linearZoom = camera.getCameraInfo().getZoomState().getValue().getLinearZoom();
+                if(linearZoom>0.9f){
+                    Toast.makeText(getApplicationContext(),R.string.maximum_level_of_zoom_reached,Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    cameraControl.setLinearZoom(linearZoom+ZOOM_STEP);
+                }
             }
         });
 
+        zoomOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                float linearZoom = camera.getCameraInfo().getZoomState().getValue().getLinearZoom();
+                if(linearZoom<=0.1f){
+                    Toast.makeText(getApplicationContext(),R.string.minimum_level_of_zoom_reached,Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    cameraControl.setLinearZoom(linearZoom-ZOOM_STEP);
+                }
+            }
+        });
+
+        torchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switchTorchState(cameraControl);
+            }
+        });
+
+
+    }
+
+    private void switchTorchState(CameraControl cameraControl){
+        cameraControl.enableTorch(!torchIsOn);
+        torchIsOn = !torchIsOn;
+        switchTorchIcon();
+    }
+    private void switchTorchIcon(){
+        if(torchIsOn){
+            torchButton.setBackground(getResources().getDrawable(R.drawable.ic_baseline_flashlight_off_24));
+        }
+        else{
+            torchButton.setBackground(getResources().getDrawable(R.drawable.ic_baseline_flashlight_on_24));
+        }
     }
 
     private boolean checkPermission(){

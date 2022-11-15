@@ -2,10 +2,12 @@ package com.example.cameraapp2;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.icu.number.Scale;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +32,7 @@ import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.w3c.dom.Text;
@@ -48,6 +51,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private List<Integer> codes;
     private TperUtilities tper;
     private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+    private ScaleBarOverlay scaleBarOverlay;
     Drawable busStopMarker;
 
     public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
@@ -117,6 +121,10 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         for(int i=0;i<mOverlay.size();i++){
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        scaleBarOverlay = new ScaleBarOverlay(mapView);
+        scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
+        mapView.getOverlays().add(scaleBarOverlay);
 
         mapView.getOverlays().add(mOverlay);
 

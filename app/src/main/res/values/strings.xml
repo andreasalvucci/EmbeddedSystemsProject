@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">NoTBus</string>
+    <string name="maximum_level_of_zoom_reached">Massimo livello di ingrandimento raggiunto</string>
+    <string name="minimum_level_of_zoom_reached">Minimo livello di ingrandimento raggiunto</string>
+    <string name="zoom_in_button_text">+</string>
+    <string name="zoom_out_button_text">-</string>
     <string name="take_photo">Scan</string>
     <string name="start_capture">Analyze</string>
     <string name="scan_here_text_view_text_code">Scansiona il codice della fermata</string>
