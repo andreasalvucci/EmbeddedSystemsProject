@@ -1,6 +1,7 @@
 package com.example.cameraapp2;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,7 +26,9 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
@@ -45,6 +48,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private List<Integer> codes;
     private TperUtilities tper;
     private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+    Drawable busStopMarker;
 
     public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
         this.context = context;
@@ -53,6 +57,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         this.tper = tper;
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
+
 
         int i = 0;
         for (i = 0; i<coordinate.size();i++){
@@ -67,7 +72,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
-
+        busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
 
 
         mapView = v.findViewById(R.id.map);
@@ -83,7 +88,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         GeoPoint startPoint = new GeoPoint(punti.get(0));
         mapController.setCenter(startPoint);
 
-        ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<OverlayItem>(items,
+        ItemizedOverlay<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<OverlayItem>(items,
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                     @Override
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
@@ -91,6 +96,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         int code = Integer.valueOf(item.getTitle());
                         String stopName = tper.getBusStopByCode(code);
                         Toast.makeText(context,"Cliccato", Toast.LENGTH_SHORT).show();
+                        item.setMarker(busStopMarker);
 
                         Executor executor = Executors.newSingleThreadExecutor();
                         String url = "https://tper-backend.herokuapp.com/fermata/"+code;
@@ -102,12 +108,15 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         //do something
                         return true;
                     }
+
                     @Override
-                    public boolean onItemLongPress(final int index, final OverlayItem item) {
+                    public boolean onItemLongPress(int index, OverlayItem item) {
                         return false;
                     }
                 }, getContext());
-        mOverlay.setFocusItemsOnTap(true);
+        for(int i=0;i<mOverlay.size();i++){
+            mOverlay.getItem(i).setMarker(busStopMarker);
+        }
 
         mapView.getOverlays().add(mOverlay);
 

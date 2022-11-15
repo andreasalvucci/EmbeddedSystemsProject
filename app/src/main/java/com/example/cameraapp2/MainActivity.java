@@ -3,6 +3,8 @@ package com.example.cameraapp2;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
@@ -33,6 +35,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.location.GnssAntennaInfo;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,7 +46,9 @@ import android.util.Size;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,22 +81,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, ImageAnalysis.Analyzer{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private static final int PERMISSION_REQUEST_CODE = 0 ;
     private ListenableFuture<ProcessCameraProvider> provider;
     private Bitmap bitmapBuffer;
     private View cropArea;
     private TextView scanHereTextView;
-    private Button picture_bt, analysis_bt;
-    private Boolean analysis_on;
+    private Button picture_bt;
     private PreviewView pview;
     private ImageCapture imageCapture;
     private ImageAnalysis imageAnalysis;
-    ProgressBar progressBar;
-    SwitchMaterial switch1;
-    Toolbar toolbar;
-    CronetEngine cronetEngine;
+    private ProgressBar progressBar;
+    private SwitchMaterial switch1;
+    private Toolbar toolbar;
+    private CronetEngine cronetEngine;
     private Handler handler;
+    private SeekBar zoomSeekBar;
+    private TextView slideToZoomTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,23 +110,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
          cronetEngine = myBuilder.build();
 
+
         handler = new Handler(getMainLooper());
+        zoomSeekBar = findViewById(R.id.zoomSeekBar);
+        slideToZoomTextView = findViewById(R.id.slideToZoomTextView);
 
         pview = findViewById(R.id.viewFinder);
         cropArea = findViewById(R.id.crop_area);
 
+        scanHereTextView = findViewById(R.id.scan_here_text_view);
+        scanHereTextView.setVisibility(View.VISIBLE);
+
         picture_bt = findViewById(R.id.image_capture_button);
-        analysis_bt = findViewById(R.id.video_capture_button);
         progressBar = findViewById(R.id.indeterminateBar);
         progressBar.setVisibility(View.INVISIBLE);
         switch1 = findViewById(R.id.switch3);
         toolbar = findViewById(R.id.toolbar);
         toolbar.setVisibility(View.VISIBLE);
+        switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    scanHereTextView.setText(R.string.scan_here_text_view_text_name);
+                }
+                else{
+                    scanHereTextView.setText(R.string.scan_here_text_view_text_code);
+                }
+            }
+        });
 
 
         picture_bt.setOnClickListener(this);
-        analysis_bt.setOnClickListener(this);
-        this.analysis_on = false;
 
 
 
@@ -158,15 +178,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageCapture = new ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
-        imageAnalysis = new ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build();
-        imageAnalysis.setAnalyzer(getExecutor(), this);
         UseCaseGroup useCaseGroup = new UseCaseGroup.Builder()
                 .setViewPort(viewPort)
                 .addUseCase(preview)
                 .addUseCase(imageCapture)
-                .addUseCase(imageAnalysis)
                 .build();
-        cameraProvider.bindToLifecycle(this,cameraSelector, useCaseGroup);
+        Camera camera = cameraProvider.bindToLifecycle(this,cameraSelector, useCaseGroup);
+        CameraControl cameraControl = camera.getCameraControl();
+
+        zoomSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                System.out.println(i);
+                cameraControl.setZoomRatio(i/10);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
     }
 
     private boolean checkPermission(){
@@ -203,9 +241,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 capturePhoto();
 
                 break;
-            case R.id.video_capture_button:
+            /*case R.id.video_capture_button:
                 this.analysis_on=!this.analysis_on;
-                break;
+                break;*/
         }
 
     }
@@ -386,24 +424,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
-    }
-    @SuppressLint("UnsafeOptInUsageError")
-    @Override
-    public void analyze(@NonNull ImageProxy imageProxy) {
-
-        Rect cropRect = imageProxy.getCropRect();
-        Image image = imageProxy.getImage();
-        if(this.analysis_on) {
-
-
-            Log.wtf("Image format", String.valueOf(imageProxy.getFormat()));
-            Bitmap result = toBitmap(imageProxy);
-            Log.wtf("WxH", result.getWidth()+"x"+result.getHeight());
-
-        }
-        imageProxy.close();
-
-
     }
 
     private Bitmap toBitmap(@NonNull ImageProxy image) {
