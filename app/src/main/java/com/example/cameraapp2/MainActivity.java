@@ -447,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName))), executor);
+                                , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName)),progressBar), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                     }
@@ -465,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             String url = "https://tper-backend.herokuapp.com/fermata/"+codice;
                             Log.d("LASTRING",url);
                             UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                    , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice)), executor);
+                                    , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice),progressBar), executor);
                             UrlRequest request = requestBuilder.build();
                             request.start();
                         }

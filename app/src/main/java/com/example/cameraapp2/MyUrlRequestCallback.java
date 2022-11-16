@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import androidx.fragment.app.FragmentManager;
 
@@ -32,9 +34,12 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     private Context context;
     private FragmentManager supportFragmentManager;
     private String stopName;
-    public MyUrlRequestCallback(FragmentManager fm, String stopName){
+    private ProgressBar progressBar;
+
+    public MyUrlRequestCallback(FragmentManager fm, String stopName, ProgressBar progressBar){
         this.supportFragmentManager=fm;
         this.stopName = stopName;
+        this.progressBar = progressBar;
     }
 
 
@@ -97,6 +102,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         } catch (JSONException e ) {
             e.printStackTrace();
         }
+        progressBar.setVisibility(View.INVISIBLE);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString),this.stopName);
         bottomSheetDialog.show(supportFragmentManager,"ModalBottomSheet");
 

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +54,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
     private ScaleBarOverlay scaleBarOverlay;
     Drawable busStopMarker;
+    private ProgressBar progressBar;
 
     public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
         this.context = context;
@@ -78,7 +80,9 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                 container, false);
         busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
 
-
+        progressBar = v.findViewById(R.id.progressBar);
+        progressBar.setIndeterminate(true);
+        progressBar.setVisibility(View.INVISIBLE);
         mapView = v.findViewById(R.id.map);
         mapView.setUseDataConnection(true);
 
@@ -96,17 +100,16 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                     @Override
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                        progressBar.setVisibility(View.VISIBLE);
 
                         int code = Integer.valueOf(item.getTitle());
                         String stopName = tper.getBusStopByCode(code);
-                        Toast.makeText(context,"Cliccato", Toast.LENGTH_SHORT).show();
                         item.setMarker(busStopMarker);
-
                         Executor executor = Executors.newSingleThreadExecutor();
                         String url = "https://tper-backend.herokuapp.com/fermata/"+code;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                         //do something
