@@ -20,6 +20,7 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -101,10 +102,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar toolbar;
     private CronetEngine cronetEngine;
     private Handler handler;
-    private TextView slideToZoomTextView;
-    private Button zoomInButton;
-    private Button zoomOutButton;
-    private Button torchButton;
+    private MaterialButton zoomInButton;
+    private MaterialButton zoomOutButton;
+    private MaterialButton torchButton;
+    private MaterialButton helpButton;
     private boolean torchIsOn = false;
 
     private final float ZOOM_STEP = 0.1f;
@@ -123,11 +124,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         zoomInButton = findViewById(R.id.zoomInbutton);
         zoomOutButton = findViewById(R.id.zoomOutButton);
         torchButton = findViewById(R.id.torchButton);
-
+        helpButton = findViewById(R.id.helpButton);
 
 
         handler = new Handler(getMainLooper());
-        slideToZoomTextView = findViewById(R.id.slideToZoomTextView);
 
         pview = findViewById(R.id.viewFinder);
         cropArea = findViewById(R.id.crop_area);
@@ -171,6 +171,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
         }, getExecutor());
+
+        helpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                HelpBottomSheetDialog helpBottomSheetDialog = new HelpBottomSheetDialog();
+                helpBottomSheetDialog.show(getSupportFragmentManager(),"ModalBottomSheet");
+            }
+        });
 
 
     }
@@ -254,10 +262,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private void switchTorchIcon(){
         if(torchIsOn){
-            torchButton.setBackground(getResources().getDrawable(R.drawable.ic_baseline_flashlight_off_24));
+            torchButton.setIcon(getResources().getDrawable(R.drawable.ic_baseline_flashlight_off_24));
         }
         else{
-            torchButton.setBackground(getResources().getDrawable(R.drawable.ic_baseline_flashlight_on_24));
+            torchButton.setIcon(getResources().getDrawable(R.drawable.ic_baseline_flashlight_on_24));
         }
     }
 

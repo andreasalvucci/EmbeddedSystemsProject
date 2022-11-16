@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/help_bottom_sheet_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_dark_background"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="16dp">
+    <TextView
+        android:id="@+id/tutorialTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tutorial_title"
+        android:textAlignment="center"
+        android:textColor="@color/md_theme_light_onPrimary"
+        android:textSize="40sp" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        app:srcCompat="@drawable/image_1" />
+
+    <TextView
+        android:id="@+id/introParagraph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/intro_paragraph_text"
+        android:textColor="@color/md_theme_light_onPrimary" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        android:layout_weight="1"
+        android:contentDescription="TODO"
+        tools:ignore="ImageContrastCheck"
+        tools:srcCompat="@drawable/image_2" />
+
+    <TextView
+        android:id="@+id/firstParagraph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/first_paragraph_text"
+        android:textColor="@color/md_theme_light_onPrimary" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="150dp"
+        app:srcCompat="@drawable/image_3" />
+
+    <TextView
+        android:id="@+id/secondParagraph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:autoText="false"
+        android:text="@string/second_paragraph_text"
+        android:textColor="@color/md_theme_light_onPrimary"
+        app:autoSizeTextType="uniform" />
+
+    <TextView
+        android:id="@+id/credits"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/credits_text"
+        android:textColor="@color/md_theme_light_onPrimary" />
+
+    <Button
+        android:id="@+id/help_close_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Chiudi" />
+
+</LinearLayout>

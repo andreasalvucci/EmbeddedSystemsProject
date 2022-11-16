@@ -17,35 +17,47 @@
 
     </androidx.camera.view.PreviewView>
 
-    <Button
-        android:id="@+id/zoomInbutton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/zoom_in_button_text"
-        app:layout_constraintBottom_toTopOf="@+id/slideToZoomTextView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/image_capture_button"
-        app:layout_constraintTop_toBottomOf="@+id/crop_area" />
-
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/zoomOutButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/zoom_out_button_text"
-        app:layout_constraintBottom_toTopOf="@+id/slideToZoomTextView"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:icon="@drawable/ic_baseline_zoom_out_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toEndOf="@+id/viewFinder"
         app:layout_constraintStart_toEndOf="@+id/image_capture_button"
         app:layout_constraintTop_toBottomOf="@+id/zoomInbutton" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/zoomInbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_baseline_zoom_in_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/image_capture_button"
+        app:layout_constraintTop_toBottomOf="@+id/crop_area" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/torchButton"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:background="@drawable/ic_baseline_flashlight_off_24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/torch_button_text"
+        app:icon="@drawable/ic_baseline_flashlight_on_24"
         app:layout_constraintBottom_toTopOf="@+id/toolbar"
         app:layout_constraintEnd_toStartOf="@+id/image_capture_button"
-        app:layout_constraintStart_toStartOf="@+id/crop_area"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/crop_area" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/helpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/help_button_text"
+        app:icon="@drawable/ic_baseline_help_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toStartOf="@+id/image_capture_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/torchButton" />
 
     <TextView
         android:id="@+id/scan_here_text_view"
@@ -59,17 +71,6 @@
         app:layout_constraintBottom_toTopOf="@+id/crop_area"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/slideToZoomTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/slide_to_zoom_text"
-        android:textColor="#757575"
-        app:autoSizeTextType="uniform"
-        app:layout_constraintBottom_toTopOf="@+id/toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/image_capture_button" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"

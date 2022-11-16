@@ -2,6 +2,13 @@
     <string name="app_name">NoTBus</string>
     <string name="maximum_level_of_zoom_reached">Massimo livello di ingrandimento raggiunto</string>
     <string name="minimum_level_of_zoom_reached">Minimo livello di ingrandimento raggiunto</string>
+    <string name="intro_paragraph_text">Con NoTBus, puoi ricevere informazioni in tempo reale sull\'arrivo degli autobus scansionando la pensilina</string>
+    <string name="first_paragraph_text">Se la fermata dell\'autobus in cui ti trovi dispone del codice univoco della fermata, allora scansiona quello</string>
+    <string name="second_paragraph_text">Altrimenti puoi scansionare il nome della fermata, ti verrà poi chiesto di individuare quella in cui ti trovi su una minimappa</string>
+    <string name="torch_button_text">Torcia</string>
+    <string name="tutorial_title">Tutorial</string>
+    <string name="credits_text">Sviluppato da Andrea Salvucci e Lorenzo Felletti</string>
+    <string name="help_button_text">Aiuto</string>
     <string name="zoom_in_button_text">+</string>
     <string name="zoom_out_button_text">-</string>
     <string name="take_photo">Scan</string>

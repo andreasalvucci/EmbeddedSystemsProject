@@ -12,8 +12,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
 public class BottomSheetDialog extends BottomSheetDialogFragment {
@@ -32,7 +30,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         View v = inflater.inflate(R.layout.bottom_sheet_layout,
                 container, false);
 
-        Button button_chiudi = v.findViewById(R.id.button_chiudi);
+        Button button_chiudi = v.findViewById(R.id.help_close_button);
         TextView nome_fermata = v.findViewById(R.id.nome_fermata);
         TextView codice_bus1 = v.findViewById(R.id.codice_bus_1);
         TextView codice_bus_2 = v.findViewById(R.id.codice_bus_2);
@@ -50,9 +48,6 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v)
             {
-                Toast.makeText(getActivity(),
-                                "Course Shared", Toast.LENGTH_SHORT)
-                        .show();
                 dismiss();
             }
         });
