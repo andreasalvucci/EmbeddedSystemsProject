@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MyUrlRequestCallback extends UrlRequest.Callback{
+public class MyUrlRequestCallback extends UrlRequest.Callback {
     private static final String TAG = MyUrlRequestCallback.class.getSimpleName();
 
     public String responseBody;
@@ -36,13 +36,11 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     private String stopName;
     private ProgressBar progressBar;
 
-    public MyUrlRequestCallback(FragmentManager fm, String stopName, ProgressBar progressBar){
-        this.supportFragmentManager=fm;
+    public MyUrlRequestCallback(FragmentManager fm, String stopName, ProgressBar progressBar) {
+        this.supportFragmentManager = fm;
         this.stopName = stopName;
         this.progressBar = progressBar;
     }
-
-
 
 
     @Override
@@ -80,13 +78,13 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
 
         String responseBodyString = new String(bytes);
 
-     //Convert bytes to string
+        //Convert bytes to string
 
         //Properly format the response String
         responseBodyString = responseBodyString.trim().replaceAll("(\r\n|\n\r|\r|\n|\r0|\n0)", "");
-        Log.d("RESPONSEBODYSTRING",responseBodyString);
+        Log.d(TAG, "RESPONSE_BODY_STRING: " + responseBodyString);
         if (responseBodyString.endsWith("0")) {
-            responseBodyString = responseBodyString.substring(0, responseBodyString.length()-1);
+            responseBodyString = responseBodyString.substring(0, responseBodyString.length() - 1);
         }
 
         this.responseBody = responseBodyString;
@@ -97,14 +95,14 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
 
         JSONObject results = new JSONObject();
         try {
-           // results.put("headers", reqHeaders);
+            // results.put("headers", reqHeaders);
             results.put("body", responseBodyString);
-        } catch (JSONException e ) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         progressBar.setVisibility(View.INVISIBLE);
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString),this.stopName);
-        bottomSheetDialog.show(supportFragmentManager,"ModalBottomSheet");
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString), this.stopName);
+        bottomSheetDialog.show(supportFragmentManager, "ModalBottomSheet");
 
     }
 
@@ -128,32 +126,32 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         if (headers.containsKey("Access-Token")) {
             List<String> accTok = headers.get("Access-Token");
 
-            if (accTok.size() > 0) {
-                accessToken = accTok.get(accTok.size()-1);
+            if (accTok != null && !accTok.isEmpty()) {
+                accessToken = accTok.get(accTok.size() - 1);
             }
         }
 
         if (headers.containsKey("Client")) {
             List<String> cl = headers.get("Client");
 
-            if (cl.size() > 0) {
-                client = cl.get(cl.size()-1);
+            if (cl != null && !cl.isEmpty()) {
+                client = cl.get(cl.size() - 1);
             }
         }
 
         if (headers.containsKey("Uid")) {
             List<String> u = headers.get("Uid");
 
-            if (u.size() > 0) {
-                uid = u.get(u.size()-1);
+            if (u != null && !u.isEmpty()) {
+                uid = u.get(u.size() - 1);
             }
         }
 
         if (headers.containsKey("Expiry")) {
             List<String> ex = headers.get("Expiry");
 
-            if (ex.size() > 0) {
-                expiry = Long.parseLong(ex.get(ex.size()-1));
+            if (ex != null && ex.size() > 0) {
+                expiry = Long.parseLong(ex.get(ex.size() - 1));
             }
         }
 
@@ -174,20 +172,17 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     }
 
     public interface OnFinishRequest<JSONObject> {
-        public void onFinishRequest(JSONObject result);
-
+        void onFinishRequest(JSONObject result);
     }
 
     private List<List<String>> getMapFromJson(String jsonString) throws JSONException, ParseException {
-
         List<List<String>> lista = new ArrayList<>();
-        Log.i("JSONinviato",jsonString);
+        Log.i("JSONinviato", jsonString);
         JSONObject json = new JSONObject(jsonString);
         JSONObject message = json.getJSONObject("message");
         JSONArray buses = message.getJSONArray("Autobus");
 
-
-        for(int i=0; i<buses.length();i++){
+        for (int i = 0; i < buses.length(); i++) {
             String line = buses.getJSONObject(i).getString("Line");
             String time = buses.getJSONObject(i).getString("Time");
             List<String> lineAndTime = new ArrayList<>();
@@ -197,9 +192,6 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
 
         }
 
-return lista;
+        return lista;
     }
-
-
-
 }

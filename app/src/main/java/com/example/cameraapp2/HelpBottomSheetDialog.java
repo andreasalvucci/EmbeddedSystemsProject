@@ -10,8 +10,6 @@ import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-
-
 public class HelpBottomSheetDialog extends BottomSheetDialogFragment {
     private Button helpCloseButton;
 
@@ -29,6 +27,4 @@ public class HelpBottomSheetDialog extends BottomSheetDialogFragment {
 
         return v;
     }
-
-
 }

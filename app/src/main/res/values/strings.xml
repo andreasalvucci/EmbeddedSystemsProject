@@ -24,4 +24,8 @@
     <string name="non_existent_bus_stop">FERMATA NON ESISTENTE</string>
     <string name="non_existent_bus_stop_code">La scansione risulta invalida oppure
         il codice della fermata non esiste. Fai tap su Aiuto per scoprire come scansionare il codice della fermata</string>
+    <string name="non_existent_dialog_title">Attenzione</string>
+    <string name="non_existent_dialog_neg_btn">Aiuto</string>
+    <string name="non_existent_dialog_pos_btn">Ok</string>
+    <string name="tutorial_toast_text">Aiuto premuto</string>
 </resources>

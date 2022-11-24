@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.List;
@@ -18,39 +19,33 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     private String autobusJSON;
     private List<List<String>> listaAutobus;
     private String stopName;
-    public BottomSheetDialog(List<List<String>> lista, String stopName){
-        this.listaAutobus=lista;
+
+    public BottomSheetDialog(List<List<String>> lista, String stopName) {
+        this.listaAutobus = lista;
         this.stopName = stopName;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable
-            ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
+            ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.bottom_sheet_layout,
                 container, false);
 
-        Button button_chiudi = v.findViewById(R.id.help_close_button);
-        TextView nome_fermata = v.findViewById(R.id.nome_fermata);
-        TextView codice_bus1 = v.findViewById(R.id.codice_bus_1);
-        TextView codice_bus_2 = v.findViewById(R.id.codice_bus_2);
-        TextView orario_bus_1 = v.findViewById(R.id.orario_bus_1);
-        TextView orario_bus_2 = v.findViewById(R.id.orario_bus_2);
-        nome_fermata.setText(stopName);
+        Button buttonChiudi = v.findViewById(R.id.help_close_button);
+        TextView nomeFermata = v.findViewById(R.id.nome_fermata);
+        TextView codiceBus1 = v.findViewById(R.id.codice_bus_1);
+        TextView codiceBus2 = v.findViewById(R.id.codice_bus_2);
+        TextView orarioBus1 = v.findViewById(R.id.orario_bus_1);
+        TextView orarioBus2 = v.findViewById(R.id.orario_bus_2);
+        nomeFermata.setText(stopName);
 
-        codice_bus1.setText(listaAutobus.get(0).get(0));
-        orario_bus_1.setText(listaAutobus.get(0).get(1));
+        codiceBus1.setText(listaAutobus.get(0).get(0));
+        orarioBus1.setText(listaAutobus.get(0).get(1));
 
-        codice_bus_2.setText(listaAutobus.get(1).get(0));
-        orario_bus_2.setText(listaAutobus.get(1).get(1));
+        codiceBus2.setText(listaAutobus.get(1).get(0));
+        orarioBus2.setText(listaAutobus.get(1).get(1));
 
-        button_chiudi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-                dismiss();
-            }
-        });
+        buttonChiudi.setOnClickListener(view -> dismiss());
         return v;
     }
 }

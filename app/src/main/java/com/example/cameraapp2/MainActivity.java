@@ -58,6 +58,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -87,8 +88,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    private static final int PERMISSION_REQUEST_CODE = 0 ;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int PERMISSION_REQUEST_CODE = 0;
     private ListenableFuture<ProcessCameraProvider> provider;
     private Bitmap bitmapBuffer;
     private View cropArea;
@@ -112,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if(!checkPermission())
+        if (!checkPermission())
             requestPermission();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -144,10 +146,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b){
+                if (b) {
                     scanHereTextView.setText(R.string.scan_here_text_view_text_name);
-                }
-                else{
+                } else {
                     scanHereTextView.setText(R.string.scan_here_text_view_text_code);
                 }
             }
@@ -157,16 +158,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         picture_bt.setOnClickListener(this);
 
 
-
         provider = ProcessCameraProvider.getInstance(this);
-        provider.addListener( () ->
+        provider.addListener(() ->
         {
-            try{
+            try {
                 ProcessCameraProvider cameraProvider = provider.get();
                 startCamera(cameraProvider);
 
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -176,20 +175,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 HelpBottomSheetDialog helpBottomSheetDialog = new HelpBottomSheetDialog();
-                helpBottomSheetDialog.show(getSupportFragmentManager(),"ModalBottomSheet");
+                helpBottomSheetDialog.show(getSupportFragmentManager(), "ModalBottomSheet");
             }
         });
 
 
     }
 
-    private Executor getExecutor(){
+    private Executor getExecutor() {
         return ContextCompat.getMainExecutor(this);
     }
 
 
-
-    private void startCamera(ProcessCameraProvider cameraProvider){
+    private void startCamera(ProcessCameraProvider cameraProvider) {
         cameraProvider.unbindAll();
         CameraSelector cameraSelector = new CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
@@ -205,91 +203,74 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addUseCase(preview)
                 .addUseCase(imageCapture)
                 .build();
-        Camera camera = cameraProvider.bindToLifecycle(this,cameraSelector, useCaseGroup);
+        Camera camera = cameraProvider.bindToLifecycle(this, cameraSelector, useCaseGroup);
         CameraControl cameraControl = camera.getCameraControl();
 
-        pview.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                MeteringPointFactory factory = pview.getMeteringPointFactory();
-                MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
-                FocusMeteringAction action = new FocusMeteringAction.Builder(point).build();
-                cameraControl.startFocusAndMetering(action);
-                return false;
+        pview.setOnTouchListener((view, motionEvent) -> {
+            MeteringPointFactory factory = pview.getMeteringPointFactory();
+            MeteringPoint point = factory.createPoint(motionEvent.getX(), motionEvent.getY());
+            FocusMeteringAction action = new FocusMeteringAction.Builder(point).build();
+            cameraControl.startFocusAndMetering(action);
+            return false;
+        });
+
+        zoomInButton.setOnClickListener(view -> {
+            float linearZoom = camera.getCameraInfo().getZoomState().getValue().getLinearZoom();
+            if (linearZoom > 0.9f) {
+                Toast.makeText(getApplicationContext(), R.string.maximum_level_of_zoom_reached, Toast.LENGTH_SHORT).show();
+            } else {
+                cameraControl.setLinearZoom(linearZoom + ZOOM_STEP);
             }
         });
 
-        zoomInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                float linearZoom = camera.getCameraInfo().getZoomState().getValue().getLinearZoom();
-                if(linearZoom>0.9f){
-                    Toast.makeText(getApplicationContext(),R.string.maximum_level_of_zoom_reached,Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    cameraControl.setLinearZoom(linearZoom+ZOOM_STEP);
-                }
+        zoomOutButton.setOnClickListener(view -> {
+            float linearZoom = camera.getCameraInfo().getZoomState().getValue().getLinearZoom();
+            if (linearZoom <= 0.1f) {
+                Toast.makeText(getApplicationContext(), R.string.minimum_level_of_zoom_reached, Toast.LENGTH_SHORT).show();
+            } else {
+                cameraControl.setLinearZoom(linearZoom - ZOOM_STEP);
             }
         });
 
-        zoomOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                float linearZoom = camera.getCameraInfo().getZoomState().getValue().getLinearZoom();
-                if(linearZoom<=0.1f){
-                    Toast.makeText(getApplicationContext(),R.string.minimum_level_of_zoom_reached,Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    cameraControl.setLinearZoom(linearZoom-ZOOM_STEP);
-                }
-            }
-        });
-
-        torchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                switchTorchState(cameraControl);
-            }
-        });
+        torchButton.setOnClickListener(view -> switchTorchState(cameraControl));
 
 
     }
 
-    private void switchTorchState(CameraControl cameraControl){
+    private void switchTorchState(CameraControl cameraControl) {
         cameraControl.enableTorch(!torchIsOn);
         torchIsOn = !torchIsOn;
         switchTorchIcon();
     }
-    private void switchTorchIcon(){
-        if(torchIsOn){
+
+    private void switchTorchIcon() {
+        if (torchIsOn) {
             torchButton.setIcon(getResources().getDrawable(R.drawable.ic_baseline_flashlight_off_24));
-        }
-        else{
+        } else {
             torchButton.setIcon(getResources().getDrawable(R.drawable.ic_baseline_flashlight_on_24));
         }
     }
 
-    private boolean checkPermission(){
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        return false;
+    private boolean checkPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                return false;
         }
         return true;
     }
 
-    private void requestPermission(){
+    private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
-    public void onRequestPermissionResult(int requestCode, String permissions[], int[] grantResults){
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch(requestCode){
+        switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
-                if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(getApplicationContext(), "Permission granted", Toast.LENGTH_SHORT).show();
-                }
-                else{
+                } else {
                     Toast.makeText(getApplicationContext(), "Permission denied", Toast.LENGTH_SHORT).show();
 
                 }
@@ -298,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.image_capture_button:
                 capturePhoto();
 
@@ -310,26 +291,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public void capturePhoto(){
-        Log.d("pviewInfo",pview.getWidth()+"x"+pview.getHeight());
-        Size size = new Size(pview.getWidth(),pview.getHeight());
-        String pictureName ="ANDREA_"+new SimpleDateFormat("yyyyMMDD_HHmmss").format(new Date())+".jpeg";
+    public void capturePhoto() {
+        Log.d("pviewInfo", pview.getWidth() + "x" + pview.getHeight());
+        Size size = new Size(pview.getWidth(), pview.getHeight());
+        String pictureName = "ANDREA_" + new SimpleDateFormat("yyyyMMDD_HHmmss").format(new Date()) + ".jpeg";
         imageCapture.takePicture(getExecutor(), new ImageCapture.OnImageCapturedCallback() {
             @Override
             public void onCaptureSuccess(@NonNull ImageProxy image) {
                 super.onCaptureSuccess(image);
 
-                try{
+                try {
                     Bitmap bitmapImage = convertImageProxyToBitmap(image);
-                    byte[] croppedPhoto = cropImage(bitmapImage,pview,cropArea);
-                    Bitmap croppedPhotoBitmap = BitmapFactory.decodeByteArray(croppedPhoto,0,croppedPhoto.length);
+                    byte[] croppedPhoto = cropImage(bitmapImage, pview, cropArea);
+                    Bitmap croppedPhotoBitmap = BitmapFactory.decodeByteArray(croppedPhoto, 0, croppedPhoto.length);
 
                     image.close();
                     progressBar.setVisibility(View.VISIBLE);
                     cropArea.setVisibility(View.INVISIBLE);
                     runInference(croppedPhotoBitmap);
-                }
-                catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 
@@ -344,11 +324,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         byteBuffer.rewind();
         byte[] bytes = new byte[byteBuffer.capacity()];
         byteBuffer.get(bytes);
-        BitmapFactory.decodeByteArray(bytes,0, bytes.length);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0, bytes.length);
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         Matrix matrix = new Matrix();
         matrix.postRotate(image.getImageInfo().getRotationDegrees());
-        bitmap = Bitmap.createBitmap(bitmap,0,0, image.getWidth(), image.getHeight(), matrix, false);
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, image.getWidth(), image.getHeight(), matrix, false);
         return bitmap;
     }
 
@@ -359,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bitmap.recycle();
         return buffer.array();
     }
+
     public static int getBitmapByteSize(Bitmap bitmap) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             return bitmap.getAllocationByteCount();
@@ -369,6 +350,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return bitmap.getRowBytes() * bitmap.getHeight();
         }
     }
+
     private MappedByteBuffer loadModelFile(Activity activity) throws IOException {
         AssetFileDescriptor fileDescriptor = activity.getAssets().openFd("east8.tflite");
         FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
@@ -378,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
 
-    private byte[] cropImage(Bitmap bitmap, View frame, View reference){
+    private byte[] cropImage(Bitmap bitmap, View frame, View reference) {
         int heightOriginal = frame.getHeight();
         int widthOriginal = frame.getWidth();
         int heightFrame = reference.getHeight();
@@ -396,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 leftFinal, topFinal, widthFinal, heightFinal
         );
 
-        ByteArrayOutputStream stream =new ByteArrayOutputStream();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmapFinal.compress(
                 Bitmap.CompressFormat.JPEG,
                 100,
@@ -405,10 +387,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return stream.toByteArray();
     }
 
-    public void runInference(Bitmap image){
+    public void runInference(Bitmap image) {
         Boolean busCodeScanning = !switch1.isChecked();
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        InputImage inputImage = InputImage.fromBitmap(image,0);
+        InputImage inputImage = InputImage.fromBitmap(image, 0);
 
         Recognizer recognizer1 = new Recognizer(image);
 
@@ -424,21 +406,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 We check whether the numerical code of the bus stop exists. If it doesn't, we cannot go further
                 and we notify the user.
                  */
-                if(busCodeScanning && !tperUtilities.codeIsBusStop(stopName)){
+                if (busCodeScanning && !tperUtilities.codeIsBusStop(stopName)) {
                     Log.d("NUMERO", "Numero non esistente");
                     progressBar.setVisibility(View.INVISIBLE);
                     cropArea.setVisibility(View.VISIBLE);
-                    if(!isFinishing())
+                    if (!isFinishing())
                         showBusStopNotExistingDialog();
-                }
-                else{
-                    Log.wtf("message","recognized word: "+stopName);
+                } else {
+                    Log.wtf("message", "recognized word: " + stopName);
                     TperUtilities tper = new TperUtilities(getApplicationContext());
                     Log.d("NUMERO", String.valueOf(stopName));
                     String nomeFermata = tper.getMoreSimilarBusStop(stopName);
-                    Log.d("Fermata",nomeFermata);
+                    Log.d("Fermata", nomeFermata);
                     progressBar.setVisibility(View.INVISIBLE);
-                    Toast.makeText(getApplicationContext(),nomeFermata,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), nomeFermata, Toast.LENGTH_SHORT).show();
                     cropArea.setVisibility(View.VISIBLE);
                     cropArea.setBackground(MainActivity.this.getResources()
                             .getDrawable(R.drawable.rectangle_round_corners_green));
@@ -449,17 +430,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             cropArea.setBackground(MainActivity.this.getResources()
                                     .getDrawable(R.drawable.rectangle_round_corners_red));
                         }
-                    },3000);
-                    if(busCodeScanning){
+                    }, 3000);
+                    if (busCodeScanning) {
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
-                        Log.d("LASTRING",url);
+                        String url = "https://tper-backend.herokuapp.com/fermata/" + stopName;
+                        Log.d("LASTRING", url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName)),progressBar), executor);
+                                , new MyUrlRequestCallback(getSupportFragmentManager(), tper.getBusStopByCode(Integer.valueOf(stopName)), progressBar), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
-                    }
-                    else{
+                    } else {
 
                         List<GeoPoint> coordinateFermate = tper.getCoupleOfCoordinatesByStopName(stopName);
                         List<Integer> codiciFermate = tper.getCodesByStopName(tper.getMoreSimilarBusStop(stopName));
@@ -467,13 +447,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         /* se esiste una sola fermata che si chiama così, allora è inutile far scegliere all'utente un
                             marcatore sulla mappa, facciamo partire subito la richiesta
                              */
-                        if(codiciFermate.size()==1){
+                        if (codiciFermate.size() == 1) {
                             int codice = codiciFermate.get(0);
                             Executor executor = Executors.newSingleThreadExecutor();
-                            String url = "https://tper-backend.herokuapp.com/fermata/"+codice;
-                            Log.d("LASTRING",url);
+                            String url = "https://tper-backend.herokuapp.com/fermata/" + codice;
+                            Log.d("LASTRING", url);
                             UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                    , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice),progressBar), executor);
+                                    , new MyUrlRequestCallback(getSupportFragmentManager(), tper.getBusStopByCode(codice), progressBar), executor);
                             UrlRequest request = requestBuilder.build();
                             request.start();
                         }
@@ -489,29 +469,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private Bitmap toBitmap(@NonNull ImageProxy image) {
-        if(bitmapBuffer == null){
-            bitmapBuffer = Bitmap.createBitmap(image.getWidth(),image.getHeight(),Bitmap.Config.ARGB_8888);
+        if (bitmapBuffer == null) {
+            bitmapBuffer = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
         bitmapBuffer.copyPixelsFromBuffer(image.getPlanes()[0].getBuffer());
         return bitmapBuffer;
     }
 
-    private void showBusStopNotExistingDialog(){
+    private void showBusStopNotExistingDialog() {
         new MaterialAlertDialogBuilder(MainActivity.this, R.style.AppTheme)
-                .setTitle("Attenzione")
+                .setTitle(R.string.non_existent_dialog_title)
                 .setIcon(R.drawable.ic_baseline_error_24)
                 .setMessage(R.string.non_existent_bus_stop_code)
-                .setPositiveButton("OK", null)
-                .setNegativeButton("Aiuto", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        showBusStopCodeTutorial();
-                    }
-                })
+                .setPositiveButton(R.string.non_existent_dialog_pos_btn, null)
+                .setNegativeButton(R.string.non_existent_dialog_neg_btn, (dialogInterface, i) -> showBusStopCodeTutorial())
                 .show();
+    }
 
+    private void showBusStopCodeTutorial() {
+        Toast.makeText(getApplicationContext(), "Aiuto premuto", Toast.LENGTH_SHORT).show();
     }
-    private void showBusStopCodeTutorial(){
-        Toast.makeText(getApplicationContext(),"Aiuto premuto", Toast.LENGTH_SHORT).show();
-    }
-    }
+}

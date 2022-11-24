@@ -51,12 +51,12 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private List<GeoPoint> punti;
     private List<Integer> codes;
     private TperUtilities tper;
-    private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+    private ArrayList<OverlayItem> items = new ArrayList<>();
     private ScaleBarOverlay scaleBarOverlay;
     Drawable busStopMarker;
     private ProgressBar progressBar;
 
-    public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
+    public MapBottomSheetDialog(Context context, List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper) {
         this.context = context;
         this.punti = coordinate;
         this.codes = codici;
@@ -66,16 +66,15 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
 
 
         int i = 0;
-        for (i = 0; i<coordinate.size();i++){
-            int codice= codici.get(i);
+        for (i = 0; i < coordinate.size(); i++) {
+            int codice = codici.get(i);
             GeoPoint punto = coordinate.get(i);
-            items.add(new OverlayItem(String.valueOf(codice), "Description",punto));
+            items.add(new OverlayItem(String.valueOf(codice), "Description", punto));
         }
     }
 
     public View onCreateView(LayoutInflater inflater, @Nullable
-            ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
+            ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
         busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
@@ -106,10 +105,10 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = "https://tper-backend.herokuapp.com/fermata/"+code;
-                        Log.d("LASTRING",url);
+                        String url = "https://tper-backend.herokuapp.com/fermata/" + code;
+                        Log.d("LASTRING", url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(), stopName, progressBar), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                         //do something
@@ -121,7 +120,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         return false;
                     }
                 }, getContext());
-        for(int i=0;i<mOverlay.size();i++){
+        for (int i = 0; i < mOverlay.size(); i++) {
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();

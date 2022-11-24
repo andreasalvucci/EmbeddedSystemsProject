@@ -23,7 +23,7 @@ import java.util.Set;
 public class TperUtilities {
     private static final String TAG = TperUtilities.class.getSimpleName();
     private final Map<Integer, String> busStopDictionary;
-    private  Map<Integer,GeoPoint> coordinates;
+    private Map<Integer, GeoPoint> coordinates;
     Context context;
 
     public TperUtilities(Context context) {
@@ -40,7 +40,7 @@ public class TperUtilities {
         return stopName;
     }
 
-    public GeoPoint getGeoPointByCode(int code){
+    public GeoPoint getGeoPointByCode(int code) {
         return coordinates.get(code);
     }
 
@@ -48,23 +48,22 @@ public class TperUtilities {
         List<Integer> codes = getCodesByStopName(getMoreSimilarBusStop(stopName));
         List<GeoPoint> points = new ArrayList<>();
 
-        for(int code : codes){
+        for (int code : codes) {
             points.add(getGeoPointByCode(code));
         }
         return points;
     }
 
-        public Boolean codeIsBusStop(String busStopCodeString){
-        int code=0;
-        try{
+    public Boolean codeIsBusStop(String busStopCodeString) {
+        int code = 0;
+        try {
             code = Integer.parseInt(busStopCodeString);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            Log.e("EXCEPTION",e.toString());
+            Log.e("EXCEPTION", e.toString());
             return false;
         }
-        if(busStopDictionary.containsKey(code))
+        if (busStopDictionary.containsKey(code))
             return true;
         else return false;
     }
@@ -115,10 +114,10 @@ public class TperUtilities {
                 String[] data = actualLine.split(context.getString(R.string.tper_dictionary_separator));
                 Integer stopCode = Integer.valueOf(data[0]);
                 String stopName = data[1];
-                Double latitude = Double.parseDouble(data[6].replace(",","."));
-                Double longitude = Double.parseDouble(data[7].replace(",","."));
-                GeoPoint stopGeoPoint = new GeoPoint(latitude,longitude);
-                coordinates.put(stopCode,stopGeoPoint);
+                Double latitude = Double.parseDouble(data[6].replace(",", "."));
+                Double longitude = Double.parseDouble(data[7].replace(",", "."));
+                GeoPoint stopGeoPoint = new GeoPoint(latitude, longitude);
+                coordinates.put(stopCode, stopGeoPoint);
                 busStopList.put(stopCode, stopName);
             }
 
@@ -134,10 +133,11 @@ public class TperUtilities {
         }
         return Collections.emptyMap();
     }
-    public List<Integer> getCodesByStopName(String stopName){
+
+    public List<Integer> getCodesByStopName(String stopName) {
         List<Integer> codes = new ArrayList<>();
-        for(Integer code : busStopDictionary.keySet()){
-            if(stopName.equals(busStopDictionary.get(code))){
+        for (Integer code : busStopDictionary.keySet()) {
+            if (stopName.equals(busStopDictionary.get(code))) {
                 codes.add(code);
             }
         }
