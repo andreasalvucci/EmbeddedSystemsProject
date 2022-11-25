@@ -1,8 +1,5 @@
 package com.example.cameraapp2;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -15,23 +12,17 @@ import org.chromium.net.UrlResponseInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.JSONParser.*;
 import org.json.simple.parser.ParseException;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MyUrlRequestCallback extends UrlRequest.Callback {
     private static final String TAG = MyUrlRequestCallback.class.getSimpleName();
 
     public String responseBody;
-    private Context context;
     private FragmentManager supportFragmentManager;
     private String stopName;
     private ProgressBar progressBar;
@@ -46,18 +37,22 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     @Override
     public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
         Log.i(TAG, "onRedirectReceived method called.");
-        // You should call the request.followRedirect() method to continue
-        // processing the request.
+        /*
+         You should call the request.followRedirect() method to continue
+         processing the request.
+        */
         request.followRedirect();
     }
 
     @Override
     public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
         Log.i(TAG, "onResponseStarted method called.");
-        // You should call the request.read() method before the request can be
-        // further processed. The following instruction provides a ByteBuffer object
-        // with a capacity of 102400 bytes for the read() method. The same buffer
-        // with data is passed to the onReadCompleted() method.
+        /*
+         You should call the request.read() method before the request can be
+         further processed. The following instruction provides a ByteBuffer object
+         with a capacity of 102400 bytes for the read() method. The same buffer
+         with data is passed to the onReadCompleted() method.
+        */
         request.read(ByteBuffer.allocateDirect(102400));
     }
 
@@ -89,13 +84,8 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
 
         this.responseBody = responseBodyString;
 
-        Map<String, List<String>> headers = info.getAllHeaders(); //get headers
-
-        String reqHeaders = createHeaders(headers);
-
         JSONObject results = new JSONObject();
         try {
-            // results.put("headers", reqHeaders);
             results.put("body", responseBodyString);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -116,68 +106,9 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
         Log.e(TAG, "The request failed.", error);
     }
 
-    private String createHeaders(Map<String, List<String>> headers) {
-
-        String accessToken = "null";
-        String client = "null";
-        String uid = "null";
-        long expiry = 0;
-
-        if (headers.containsKey("Access-Token")) {
-            List<String> accTok = headers.get("Access-Token");
-
-            if (accTok != null && !accTok.isEmpty()) {
-                accessToken = accTok.get(accTok.size() - 1);
-            }
-        }
-
-        if (headers.containsKey("Client")) {
-            List<String> cl = headers.get("Client");
-
-            if (cl != null && !cl.isEmpty()) {
-                client = cl.get(cl.size() - 1);
-            }
-        }
-
-        if (headers.containsKey("Uid")) {
-            List<String> u = headers.get("Uid");
-
-            if (u != null && !u.isEmpty()) {
-                uid = u.get(u.size() - 1);
-            }
-        }
-
-        if (headers.containsKey("Expiry")) {
-            List<String> ex = headers.get("Expiry");
-
-            if (ex != null && ex.size() > 0) {
-                expiry = Long.parseLong(ex.get(ex.size() - 1));
-            }
-        }
-
-        JSONObject currentHeaders = new JSONObject();
-        try {
-            currentHeaders.put("access-token", accessToken);
-            currentHeaders.put("client", client);
-            currentHeaders.put("uid", uid);
-            currentHeaders.put("expiry", expiry);
-
-            return currentHeaders.toString();
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return currentHeaders.toString();
-    }
-
-    public interface OnFinishRequest<JSONObject> {
-        void onFinishRequest(JSONObject result);
-    }
-
-    private List<List<String>> getMapFromJson(String jsonString) throws JSONException, ParseException {
+    private List<List<String>> getMapFromJson(String jsonString) throws JSONException {
         List<List<String>> lista = new ArrayList<>();
-        Log.i("JSONinviato", jsonString);
+        Log.i(TAG, "JSONinviato" + jsonString);
         JSONObject json = new JSONObject(jsonString);
         JSONObject message = json.getJSONObject("message");
         JSONArray buses = message.getJSONArray("Autobus");
@@ -189,7 +120,6 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
             lineAndTime.add(line);
             lineAndTime.add(time);
             lista.add(lineAndTime);
-
         }
 
         return lista;

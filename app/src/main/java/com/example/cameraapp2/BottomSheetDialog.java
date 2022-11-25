@@ -31,7 +31,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         View v = inflater.inflate(R.layout.bottom_sheet_layout,
                 container, false);
 
-        Button buttonChiudi = v.findViewById(R.id.help_close_button);
+        Button closeButton = v.findViewById(R.id.help_close_button);
         TextView nomeFermata = v.findViewById(R.id.nome_fermata);
         TextView codiceBus1 = v.findViewById(R.id.codice_bus_1);
         TextView codiceBus2 = v.findViewById(R.id.codice_bus_2);
@@ -45,7 +45,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         codiceBus2.setText(listaAutobus.get(1).get(0));
         orarioBus2.setText(listaAutobus.get(1).get(1));
 
-        buttonChiudi.setOnClickListener(view -> dismiss());
+        closeButton.setOnClickListener(view -> dismiss());
         return v;
     }
 }

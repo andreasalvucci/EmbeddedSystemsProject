@@ -95,7 +95,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         GeoPoint startPoint = new GeoPoint(punti.get(0));
         mapController.setCenter(startPoint);
 
-        ItemizedOverlay<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<OverlayItem>(items,
+        ItemizedOverlay<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(items,
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                     @Override
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {

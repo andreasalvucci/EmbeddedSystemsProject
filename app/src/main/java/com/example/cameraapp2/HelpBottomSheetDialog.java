@@ -18,12 +18,7 @@ public class HelpBottomSheetDialog extends BottomSheetDialogFragment {
         View v = inflater.inflate(R.layout.help_bottom_sheet_layout,
                 container, false);
         helpCloseButton = v.findViewById(R.id.help_close_button);
-        helpCloseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dismiss();
-            }
-        });
+        helpCloseButton.setOnClickListener(view -> dismiss());
 
         return v;
     }

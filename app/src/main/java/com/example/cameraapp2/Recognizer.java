@@ -1,8 +1,6 @@
 package com.example.cameraapp2;
 
 import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.Rect;
 
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
@@ -45,36 +43,15 @@ public class Recognizer {
         return stopNumber;
     }
 
-    private static boolean isAllUpper(String s) {
-        for (char c : s.toCharArray()) {
-            if (Character.isLetter(c) && Character.isLowerCase(c)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private List<String> getWordsFromText(Text text) {
-        String resultText = text.getText();
         List<String> parole = new ArrayList<>();
         for (Text.TextBlock block : text.getTextBlocks()) {
-            String blockText = block.getText();
-            Point[] blockCornerPoints = block.getCornerPoints();
-            Rect blockFrame = block.getBoundingBox();
             for (Text.Line line : block.getLines()) {
-                String lineText = line.getText();
-                Point[] lineCornerPoints = line.getCornerPoints();
-                Rect lineFrame = line.getBoundingBox();
+                line.getBoundingBox();
                 for (Text.Element element : line.getElements()) {
                     String elementText = element.getText();
                     parole.add(elementText);
-                    Point[] elementCornerPoints = element.getCornerPoints();
-                    Rect elementFrame = element.getBoundingBox();
-                    for (Text.Symbol symbol : element.getSymbols()) {
-                        String symbolText = symbol.getText();
-                        Point[] symbolCornerPoints = symbol.getCornerPoints();
-                        Rect symbolFrame = symbol.getBoundingBox();
-                    }
+                    element.getSymbols();
                 }
             }
         }

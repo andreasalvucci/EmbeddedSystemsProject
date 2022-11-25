@@ -15,10 +15,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class TperUtilities {
     private static final String TAG = TperUtilities.class.getSimpleName();
@@ -55,17 +53,13 @@ public class TperUtilities {
     }
 
     public Boolean codeIsBusStop(String busStopCodeString) {
-        int code = 0;
         try {
-            code = Integer.parseInt(busStopCodeString);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("EXCEPTION", e.toString());
-            return false;
+            int code = Integer.parseInt(busStopCodeString);
+            return busStopDictionary.containsKey(code);
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "EXCEPTION: " + e);
         }
-        if (busStopDictionary.containsKey(code))
-            return true;
-        else return false;
+        return false;
     }
 
     private Boolean isBusStop(String aPossibleBusStop) {
@@ -107,15 +101,15 @@ public class TperUtilities {
             InputStream in = res.openRawResource(R.raw.fermate);
             InputStreamReader isr = new InputStreamReader(in);
             BufferedReader br = new BufferedReader(isr);
-            //we skip the first line
-            br.readLine();
+
+            br.readLine(); //skip the first line
             String actualLine;
             while ((actualLine = br.readLine()) != null) {
                 String[] data = actualLine.split(context.getString(R.string.tper_dictionary_separator));
                 Integer stopCode = Integer.valueOf(data[0]);
                 String stopName = data[1];
-                Double latitude = Double.parseDouble(data[6].replace(",", "."));
-                Double longitude = Double.parseDouble(data[7].replace(",", "."));
+                double latitude = Double.parseDouble(data[6].replace(",", "."));
+                double longitude = Double.parseDouble(data[7].replace(",", "."));
                 GeoPoint stopGeoPoint = new GeoPoint(latitude, longitude);
                 coordinates.put(stopCode, stopGeoPoint);
                 busStopList.put(stopCode, stopName);
@@ -136,9 +130,9 @@ public class TperUtilities {
 
     public List<Integer> getCodesByStopName(String stopName) {
         List<Integer> codes = new ArrayList<>();
-        for (Integer code : busStopDictionary.keySet()) {
-            if (stopName.equals(busStopDictionary.get(code))) {
-                codes.add(code);
+        for (Map.Entry<Integer, String> entry : busStopDictionary.entrySet()) {
+            if (stopName.equals(entry.getValue())) {
+                codes.add(entry.getKey());
             }
         }
         return codes;
