@@ -226,7 +226,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun capturePhoto() {
-        Log.d("pviewInfo", previewView.width.toString() + "x" + previewView!!.height)
+        Log.d(TAG, "pViewInfo ${previewView.width} x ${previewView.height}")
         Size(previewView.width, previewView.height)
         "ANDREA_" + SimpleDateFormat("yyyyMMDD_HHmmss").format(Date()) + ".jpeg"
         imageCapture.takePicture(executor, object : OnImageCapturedCallback() {
