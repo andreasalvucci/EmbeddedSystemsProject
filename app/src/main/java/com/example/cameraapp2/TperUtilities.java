@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.osmdroid.util.GeoPoint;
 
 import java.io.BufferedReader;
@@ -71,12 +71,15 @@ public class TperUtilities {
         String closest = null;
 
         for (String compareObject : collection) {
-            int currentDistance = StringUtils.getLevenshteinDistance(compareObject, target);
+            Integer currentDistance = LevenshteinDistance.getDefaultInstance().apply(compareObject, target);
+
             if (currentDistance < currMinDistance) {
                 currMinDistance = currentDistance;
                 closest = compareObject;
             }
         }
+
+        if (currMinDistance > (target.length() * 0.6)) closest = null;
 
         return closest;
     }
@@ -129,12 +132,14 @@ public class TperUtilities {
     }
 
     public List<Integer> getCodesByStopName(String stopName) {
+        Log.d(TAG, "getCodesByStopName - Received:" + stopName);
         List<Integer> codes = new ArrayList<>();
         for (Map.Entry<Integer, String> entry : busStopDictionary.entrySet()) {
             if (stopName.equals(entry.getValue())) {
                 codes.add(entry.getKey());
             }
         }
+        Log.d(TAG, "getCodesByStopName - Found:" + codes);
         return codes;
     }
 }

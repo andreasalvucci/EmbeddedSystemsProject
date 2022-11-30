@@ -1,46 +1,39 @@
 package com.example.cameraapp2
 
 import android.Manifest
-import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.lifecycle.ProcessCameraProvider
-import android.graphics.Bitmap
-import androidx.camera.view.PreviewView
-import com.google.android.material.switchmaterial.SwitchMaterial
-import org.chromium.net.CronetEngine
-import com.google.android.material.button.MaterialButton
-import android.os.Bundle
-import android.preference.PreferenceManager
-import androidx.core.content.ContextCompat
-import android.view.MotionEvent
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import androidx.camera.core.ImageCapture.OnImageCapturedCallback
-import android.graphics.BitmapFactory
-import kotlin.Throws
-import android.app.Activity
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.google.mlkit.vision.common.InputImage
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import android.annotation.SuppressLint
 import android.content.DialogInterface
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.os.Build
+import android.os.Bundle
 import android.os.Handler
+import androidx.preference.PreferenceManager
 import android.util.Log
 import android.util.Size
+import android.view.MotionEvent
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.camera.core.*
+import androidx.camera.core.ImageCapture.OnImageCapturedCallback
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import org.chromium.net.CronetEngine
 import org.osmdroid.config.Configuration
 import java.io.ByteArrayOutputStream
-import java.io.FileInputStream
-import java.io.IOException
-import java.lang.Exception
-import java.nio.ByteBuffer
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executor
@@ -48,13 +41,11 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var provider: ListenableFuture<ProcessCameraProvider>? = null
-    private var bitmapBuffer: Bitmap? = null
     private var cropArea: View? = null
     private var scanHereTextView: TextView? = null
     private var pictureBtn: Button? = null
-    private var previewView: PreviewView? = null
+    private lateinit var previewView: PreviewView
     private lateinit var imageCapture: ImageCapture
-    private val imageAnalysis: ImageAnalysis? = null
     private var progressBar: ProgressBar? = null
     private var switch1: SwitchMaterial? = null
     private var toolbar: Toolbar? = null
@@ -94,13 +85,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         switch1 = findViewById(R.id.switch3)
         toolbar = findViewById(R.id.toolbar)
         toolbar?.visibility = View.VISIBLE
-        switch1?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, b ->
+        switch1?.setOnCheckedChangeListener { _, b ->
             if (b) {
                 scanHereTextView?.setText(R.string.scan_here_text_view_text_name)
             } else {
                 scanHereTextView?.setText(R.string.scan_here_text_view_text_code)
             }
-        })
+        }
         pictureBtn?.setOnClickListener(this)
         provider = ProcessCameraProvider.getInstance(this)
         provider!!.addListener({
@@ -117,26 +108,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun startCamera(cameraProvider: ProcessCameraProvider) {
         cameraProvider.unbindAll()
         val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
         val preview = Preview.Builder().build()
-        val viewPort = previewView!!.viewPort
-        preview.setSurfaceProvider(previewView!!.surfaceProvider)
+        val viewPort = previewView.viewPort
+        preview.setSurfaceProvider(previewView.surfaceProvider)
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
         val useCaseGroup = UseCaseGroup.Builder()
             .setViewPort(viewPort!!)
             .addUseCase(preview)
-            .addUseCase(imageCapture!!)
+            .addUseCase(imageCapture)
             .build()
         val camera = cameraProvider.bindToLifecycle(this, cameraSelector, useCaseGroup)
         val cameraControl = camera.cameraControl
-        previewView!!.setOnTouchListener { _: View?, motionEvent: MotionEvent ->
-            val factory = previewView!!.meteringPointFactory
+        previewView.setOnTouchListener { _: View?, motionEvent: MotionEvent ->
+            val factory = previewView.meteringPointFactory
             val point = factory.createPoint(motionEvent.x, motionEvent.y)
             val action = FocusMeteringAction.Builder(point).build()
             cameraControl.startFocusAndMetering(action)
@@ -152,7 +144,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                cameraControl.setLinearZoom(linearZoom + Companion.ZOOM_STEP)
+                cameraControl.setLinearZoom(linearZoom + ZOOM_STEP)
             }
         }
         zoomOutButton!!.setOnClickListener {
@@ -165,7 +157,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
-                cameraControl.setLinearZoom(linearZoom - Companion.ZOOM_STEP)
+                cameraControl.setLinearZoom(linearZoom - ZOOM_STEP)
             }
         }
         torchButton!!.setOnClickListener { switchTorchState(cameraControl) }
@@ -179,9 +171,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun switchTorchIcon() {
         if (torchIsOn) {
-            torchButton!!.icon = resources.getDrawable(R.drawable.ic_baseline_flashlight_off_24)
+            torchButton!!.icon = ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_baseline_flashlight_off_24,
+                null
+            )
         } else {
-            torchButton!!.icon = resources.getDrawable(R.drawable.ic_baseline_flashlight_on_24)
+            torchButton!!.icon = ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_baseline_flashlight_on_24,
+                null
+            )
         }
     }
 
@@ -225,11 +225,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    fun capturePhoto() {
-        Log.d("pviewInfo", previewView!!.width.toString() + "x" + previewView!!.height)
-        val size = Size(previewView!!.width, previewView!!.height)
-        val pictureName = "ANDREA_" + SimpleDateFormat("yyyyMMDD_HHmmss").format(Date()) + ".jpeg"
-        imageCapture!!.takePicture(executor, object : OnImageCapturedCallback() {
+    private fun capturePhoto() {
+        Log.d("pviewInfo", previewView.width.toString() + "x" + previewView!!.height)
+        Size(previewView.width, previewView.height)
+        "ANDREA_" + SimpleDateFormat("yyyyMMDD_HHmmss").format(Date()) + ".jpeg"
+        imageCapture.takePicture(executor, object : OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 super.onCaptureSuccess(image)
                 try {
@@ -262,16 +262,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         return bitmap
     }
 
-    @Throws(IOException::class)
-    private fun loadModelFile(activity: Activity): MappedByteBuffer {
-        val fileDescriptor = activity.assets.openFd("east8.tflite")
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
     private fun cropImage(bitmap: Bitmap, frame: View?, reference: View?): ByteArray {
         val heightOriginal = frame!!.height
         val widthOriginal = frame.width
@@ -300,66 +290,50 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     fun runInference(image: Bitmap?) {
         val busCodeScanning = !switch1!!.isChecked
-        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        val inputImage = InputImage.fromBitmap(image!!, 0)
+        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        InputImage.fromBitmap(image!!, 0)
         val recognizer1 = Recognizer(image)
-        val stopNumber = recognizer1.getStopNumber { stopName ->
+        recognizer1.getStopNumber { stopName ->
             val tperUtilities = TperUtilities(this@MainActivity)
 
-            /*
-                      We check whether the numerical code of the bus stop exists. If it doesn't, we cannot go further
-                      and we notify the user.
-                       */if (busCodeScanning && !tperUtilities.codeIsBusStop(stopName)) {
-            Log.d("NUMERO", "Numero non esistente")
-            progressBar!!.visibility = View.INVISIBLE
-            cropArea!!.visibility = View.VISIBLE
-            if (!isFinishing) showBusStopNotExistingDialog()
-        } else {
-            Log.wtf("message", "recognized word: $stopName")
-            val tper = TperUtilities(applicationContext)
-            Log.d("NUMERO", stopName)
-            val nomeFermata = tper.getMoreSimilarBusStop(stopName)
-            Log.d("Fermata", nomeFermata)
-            progressBar!!.visibility = View.INVISIBLE
-            Toast.makeText(applicationContext, nomeFermata, Toast.LENGTH_SHORT).show()
-            cropArea!!.visibility = View.VISIBLE
-            cropArea!!.background = this@MainActivity.resources
-                .getDrawable(R.drawable.rectangle_round_corners_green)
-            handler!!.postDelayed({
-                cropArea!!.background = this@MainActivity.resources
-                    .getDrawable(R.drawable.rectangle_round_corners_red)
-            }, 3000)
-            if (busCodeScanning) {
-                val executor: Executor = Executors.newSingleThreadExecutor()
-                val url = "https://tper-backend.herokuapp.com/fermata/$stopName"
-                Log.d("LASTRING", url)
-                val requestBuilder = cronetEngine!!.newUrlRequestBuilder(
-                    url,
-                    MyUrlRequestCallback(
-                        supportFragmentManager,
-                        tper.getBusStopByCode(Integer.valueOf(stopName)),
-                        progressBar
-                    ),
-                    executor
-                )
-                val request = requestBuilder.build()
-                request.start()
+            /* We check whether the numerical code of the bus stop exists. If it doesn't, we cannot go further
+             * and we notify the user. */
+            if (busCodeScanning && !tperUtilities.codeIsBusStop(stopName)) {
+                Log.d(TAG, "NUMBER: Non existent number")
+                progressBar!!.visibility = View.INVISIBLE
+                cropArea!!.visibility = View.VISIBLE
+                if (!isFinishing) showBusStopNotExistingDialog()
             } else {
-                val coordinateFermate = tper.getCoupleOfCoordinatesByStopName(stopName)
-                val codiciFermate = tper.getCodesByStopName(tper.getMoreSimilarBusStop(stopName))
-
-                /* se esiste una sola fermata che si chiama così, allora è inutile far scegliere all'utente un
-                                  marcatore sulla mappa, facciamo partire subito la richiesta
-                                   */if (codiciFermate.size == 1) {
-                    val codice = codiciFermate[0]
+                Log.wtf("message", "recognized word: $stopName")
+                val tper = TperUtilities(applicationContext)
+                Log.d(TAG, "NUMBER: $stopName")
+                val busStopName = tper.getMoreSimilarBusStop(stopName)
+                Log.d(TAG, "bus Stop: $busStopName")
+                progressBar!!.visibility = View.INVISIBLE
+                val toastText = busStopName ?: getString(R.string.bus_stop_not_recognized)
+                Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT).show()
+                cropArea!!.visibility = View.VISIBLE
+                cropArea!!.background = ResourcesCompat.getDrawable(
+                    resources,
+                    R.drawable.rectangle_round_corners_green,
+                    null
+                )
+                handler!!.postDelayed({
+                    cropArea!!.background = ResourcesCompat.getDrawable(
+                        resources,
+                        R.drawable.rectangle_round_corners_red,
+                        null
+                    )
+                }, 3000)
+                if (busCodeScanning) {
                     val executor: Executor = Executors.newSingleThreadExecutor()
-                    val url = "https://tper-backend.herokuapp.com/fermata/$codice"
-                    Log.d("LASTRING", url)
-                    val requestBuilder = cronetEngine!!.newUrlRequestBuilder(
+                    val url = "https://tper-backend.herokuapp.com/fermata/$stopName"
+                    Log.d(TAG, "URL: $url")
+                    val requestBuilder = cronetEngine.newUrlRequestBuilder(
                         url,
                         MyUrlRequestCallback(
                             supportFragmentManager,
-                            tper.getBusStopByCode(codice),
+                            tper.getBusStopByCode(Integer.valueOf(stopName)),
                             progressBar
                         ),
                         executor
@@ -367,25 +341,49 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     val request = requestBuilder.build()
                     request.start()
                 } else {
-                    val mapBottomSheetDialog = MapBottomSheetDialog(
-                        applicationContext,
-                        coordinateFermate,
-                        codiciFermate,
-                        tper
-                    )
-                    mapBottomSheetDialog.show(supportFragmentManager, "ModalBottomSheet")
+                    val busStopsCoordinates = tper.getCoupleOfCoordinatesByStopName(stopName)
+                    val busStopsCodes =
+                        tper.getCodesByStopName(tper.getMoreSimilarBusStop(stopName))
+
+                    /* se esiste una sola fermata che si chiama così, allora è inutile far scegliere all'utente un
+                     * marcatore sulla mappa, facciamo partire subito la richiesta */
+                    when (busStopsCodes.size) {
+                        0 -> {
+                            Log.d(TAG, "NUMBER: Non existent number")
+                            progressBar!!.visibility = View.INVISIBLE
+                            cropArea!!.visibility = View.VISIBLE
+                            if (!isFinishing) showBusStopNotExistingDialog()
+                        }
+                        1 -> {
+                            val stopCode = busStopsCodes[0]
+                            val executor: Executor = Executors.newSingleThreadExecutor()
+                            val url = "https://tper-backend.herokuapp.com/fermata/$stopCode"
+                            Log.d(TAG, "URL $url")
+                            val requestBuilder = cronetEngine.newUrlRequestBuilder(
+                                url,
+                                MyUrlRequestCallback(
+                                    supportFragmentManager,
+                                    tper.getBusStopByCode(stopCode),
+                                    progressBar
+                                ),
+                                executor
+                            )
+                            val request = requestBuilder.build()
+                            request.start()
+                        }
+                        else -> {
+                            val mapBottomSheetDialog = MapBottomSheetDialog(
+                                applicationContext,
+                                busStopsCoordinates,
+                                busStopsCodes,
+                                tper
+                            )
+                            mapBottomSheetDialog.show(supportFragmentManager, "ModalBottomSheet")
+                        }
+                    }
                 }
             }
         }
-        }
-    }
-
-    private fun toBitmap(image: ImageProxy): Bitmap? {
-        if (bitmapBuffer == null) {
-            bitmapBuffer = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
-        }
-        bitmapBuffer!!.copyPixelsFromBuffer(image.planes[0].buffer)
-        return bitmapBuffer
     }
 
     private fun showBusStopNotExistingDialog() {
@@ -403,19 +401,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     companion object {
+        private val TAG = MainActivity::class.java.simpleName
         private const val PERMISSION_REQUEST_CODE = 0
         private const val ZOOM_STEP = 0.1f
-
-        fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
-            val allocationSize = getBitmapByteSize(bitmap)
-            val buffer = ByteBuffer.allocate(allocationSize)
-            bitmap.copyPixelsToBuffer(buffer)
-            bitmap.recycle()
-            return buffer.array()
-        }
-
-        private fun getBitmapByteSize(bitmap: Bitmap): Int {
-            return bitmap.allocationByteCount
-        }
     }
 }

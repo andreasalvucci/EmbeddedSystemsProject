@@ -28,4 +28,5 @@
     <string name="non_existent_dialog_neg_btn">Aiuto</string>
     <string name="non_existent_dialog_pos_btn">Ok</string>
     <string name="tutorial_toast_text">Aiuto premuto</string>
+    <string name="bus_stop_not_recognized">Fermata non trovata</string>
 </resources>

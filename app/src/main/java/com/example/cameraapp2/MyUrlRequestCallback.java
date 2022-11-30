@@ -33,7 +33,6 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
         this.progressBar = progressBar;
     }
 
-
     @Override
     public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
         Log.i(TAG, "onRedirectReceived method called.");
@@ -71,9 +70,8 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
             byteBuffer.get(bytes);
         }
 
-        String responseBodyString = new String(bytes);
-
         //Convert bytes to string
+        String responseBodyString = new String(bytes);
 
         //Properly format the response String
         responseBodyString = responseBodyString.trim().replaceAll("(\r\n|\n\r|\r|\n|\r0|\n0)", "");
@@ -108,7 +106,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
 
     private List<List<String>> getMapFromJson(String jsonString) throws JSONException {
         List<List<String>> lista = new ArrayList<>();
-        Log.i(TAG, "JSONinviato" + jsonString);
+        Log.i(TAG, "sent JSON: " + jsonString);
         JSONObject json = new JSONObject(jsonString);
         JSONObject message = json.getJSONObject("message");
         JSONArray buses = message.getJSONArray("Autobus");

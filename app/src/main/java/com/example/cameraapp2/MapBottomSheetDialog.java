@@ -2,41 +2,30 @@ package com.example.cameraapp2;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.icu.number.Scale;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UrlRequest;
 import org.osmdroid.api.IMapController;
-import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
-import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +37,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     CronetEngine cronetEngine;
     Context context;
     private MapView mapView;
-    private List<GeoPoint> punti;
+    private List<GeoPoint> geoPoints;
     private List<Integer> codes;
     private TperUtilities tper;
     private ArrayList<OverlayItem> items = new ArrayList<>();
@@ -56,20 +45,22 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     Drawable busStopMarker;
     private ProgressBar progressBar;
 
-    public MapBottomSheetDialog(Context context, List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper) {
+    public MapBottomSheetDialog(Context context, List<GeoPoint> coordinates, List<Integer> codes, TperUtilities tper) {
         this.context = context;
-        this.punti = coordinate;
-        this.codes = codici;
+        this.geoPoints = coordinates;
+        this.codes = codes;
         this.tper = tper;
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
-
-        int i = 0;
-        for (i = 0; i < coordinate.size(); i++) {
-            int codice = codici.get(i);
-            GeoPoint punto = coordinate.get(i);
-            items.add(new OverlayItem(String.valueOf(codice), "Description", punto));
+        for (int i = 0; i < coordinates.size(); i++) {
+            try {
+                int code = codes.get(i);
+                GeoPoint point = coordinates.get(i);
+                items.add(new OverlayItem(String.valueOf(code), "Description", point));
+            } catch (IndexOutOfBoundsException e) {
+                Log.e("MapBottomSheetDialog", "EXCEPTION: " + e);
+            }
         }
     }
 
@@ -77,7 +68,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
             ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
-        busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
+        busStopMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.bus_stop, null);
 
         progressBar = v.findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
@@ -92,7 +83,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         mapView.setMultiTouchControls(true);
         IMapController mapController = mapView.getController();
         mapController.setZoom(20.0);
-        GeoPoint startPoint = new GeoPoint(punti.get(0));
+        GeoPoint startPoint = new GeoPoint(geoPoints.get(0));
         mapController.setCenter(startPoint);
 
         ItemizedOverlay<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(items,
@@ -101,7 +92,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
                         progressBar.setVisibility(View.VISIBLE);
 
-                        int code = Integer.valueOf(item.getTitle());
+                        int code = Integer.parseInt(item.getTitle());
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
@@ -120,16 +111,17 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         return false;
                     }
                 }, getContext());
+
         for (int i = 0; i < mOverlay.size(); i++) {
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
+
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         scaleBarOverlay = new ScaleBarOverlay(mapView);
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 
         mapView.getOverlays().add(mOverlay);
-
 
         return v;
     }
