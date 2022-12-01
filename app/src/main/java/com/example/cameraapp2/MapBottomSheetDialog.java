@@ -32,23 +32,20 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class MapBottomSheetDialog extends BottomSheetDialogFragment {
+import com.example.cameraapp2.tper.TperUtilities;
 
+public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     CronetEngine cronetEngine;
     Context context;
-    private MapView mapView;
-    private List<GeoPoint> geoPoints;
-    private List<Integer> codes;
-    private TperUtilities tper;
+    private final List<GeoPoint> geoPoints;
+    private final TperUtilities tper;
     private ArrayList<OverlayItem> items = new ArrayList<>();
-    private ScaleBarOverlay scaleBarOverlay;
     Drawable busStopMarker;
     private ProgressBar progressBar;
 
     public MapBottomSheetDialog(Context context, List<GeoPoint> coordinates, List<Integer> codes, TperUtilities tper) {
         this.context = context;
         this.geoPoints = coordinates;
-        this.codes = codes;
         this.tper = tper;
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
@@ -64,6 +61,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         }
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable
             ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
@@ -73,7 +71,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         progressBar = v.findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.INVISIBLE);
-        mapView = v.findViewById(R.id.map);
+        MapView mapView = v.findViewById(R.id.map);
         mapView.setUseDataConnection(true);
 
 
@@ -102,7 +100,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                                 , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(), stopName, progressBar), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
-                        //do something
+
                         return true;
                     }
 
@@ -117,7 +115,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         }
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        scaleBarOverlay = new ScaleBarOverlay(mapView);
+        ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(mapView);
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 

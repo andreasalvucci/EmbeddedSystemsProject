@@ -105,7 +105,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     }
 
     private List<List<String>> getMapFromJson(String jsonString) throws JSONException {
-        List<List<String>> lista = new ArrayList<>();
+        List<List<String>> lists = new ArrayList<>();
         Log.i(TAG, "sent JSON: " + jsonString);
         JSONObject json = new JSONObject(jsonString);
         JSONObject message = json.getJSONObject("message");
@@ -117,9 +117,9 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
             List<String> lineAndTime = new ArrayList<>();
             lineAndTime.add(line);
             lineAndTime.add(time);
-            lista.add(lineAndTime);
+            lists.add(lineAndTime);
         }
 
-        return lista;
+        return lists;
     }
 }

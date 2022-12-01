@@ -92,11 +92,11 @@
         android:textColor="@color/md_theme_light_inversePrimary"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/switch3"
+        app:layout_constraintStart_toEndOf="@+id/scan_by_stop_name"
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch3"
+        android:id="@+id/scan_by_stop_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
