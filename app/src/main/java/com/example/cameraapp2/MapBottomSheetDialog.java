@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -39,11 +40,11 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     Context context;
     private final List<GeoPoint> geoPoints;
     private final TperUtilities tper;
-    private ArrayList<OverlayItem> items = new ArrayList<>();
+    private final ArrayList<OverlayItem> items = new ArrayList<>();
     Drawable busStopMarker;
     private ProgressBar progressBar;
 
-    public MapBottomSheetDialog(Context context, List<GeoPoint> coordinates, List<Integer> codes, TperUtilities tper) {
+    public MapBottomSheetDialog(Context context, @NonNull List<GeoPoint> coordinates, List<Integer> codes, TperUtilities tper) {
         this.context = context;
         this.geoPoints = coordinates;
         this.tper = tper;
@@ -62,7 +63,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable
             ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);

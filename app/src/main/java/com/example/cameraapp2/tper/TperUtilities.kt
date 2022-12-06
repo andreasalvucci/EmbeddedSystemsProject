@@ -8,12 +8,14 @@ import org.osmdroid.util.GeoPoint
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import kotlin.math.ceil
 
 /**
  * Utility class for TPER data.
  *
  * @constructor
  * Takes a [Context] as a parameter, used to load the TPER stops data from file.
+ *
  * @param context The context of the application.
  */
 class TperUtilities(context: Context) {
@@ -24,7 +26,6 @@ class TperUtilities(context: Context) {
         loadData(context)
     }
 
-    // guarda perché è diversa ora
     /**
      * Returns the bus stop name from its code number
      *
@@ -35,18 +36,23 @@ class TperUtilities(context: Context) {
         return busStopDictionary[code] ?: return ""
     }
 
-    fun getMoreSimilarBusStop(aPossibleBusStop: String): String {
-        Log.d(TAG, "Received:$aPossibleBusStop")
-        return if (java.lang.Boolean.TRUE == isBusStop(aPossibleBusStop)) {
-            Log.wtf(TAG, "it's a valid name for a stop")
-            aPossibleBusStop
-        } else {
-            Log.wtf(TAG, "must look for similarity")
-            findClosestMatch(busStopDictionary.values, aPossibleBusStop).toString()
+    /**
+     * Returns the most similar bus stop name from a given string.
+     *
+     * @param aPossibleBusStop name of a possible bus stop
+     * @return the name of the most similar bus stop, or an empty string if no similar bus stop is found
+     */
+    fun getMoreSimilarBusStop(aPossibleBusStop: String): String = when {
+        aPossibleBusStop.isEmpty() -> ""
+        busStopDictionary.containsValue(aPossibleBusStop) -> aPossibleBusStop
+        else -> {
+            Log.d(TAG, "must look for similarity")
+
+            findClosestMatch(aPossibleBusStop) ?: ""
         }
     }
 
-    fun getGeoPointByCode(code: Int): GeoPoint? {
+    private fun getGeoPointByCode(code: Int): GeoPoint? {
         return coordinates[code]
     }
 
@@ -88,33 +94,24 @@ class TperUtilities(context: Context) {
         return codes
     }
 
-    private fun isBusStop(aPossibleBusStop: String): Boolean {
-        return busStopDictionary.containsValue(aPossibleBusStop)
+    /**
+     * Returns the most similar bus stop name to [aPossibleBusStop] using the Levenshtein distance.
+     *
+     * [aPossibleBusStop] is compared in uppercase, since the bus stop names are all uppercase,
+     * and we don't want to consider the case in the Levenshtein distance.
+     *
+     * @param aPossibleBusStop
+     * @return the most similar bus stop name, or null if no similar bus stop is found
+     */
+    private fun findClosestMatch(aPossibleBusStop: String): String? {
+        return Companion.findClosestMatch(busStopDictionary.values, aPossibleBusStop.uppercase())
     }
 
-    private fun findClosestMatch(collection: Collection<String>, target: String): String? {
-        var currMinDistance = Int.MAX_VALUE
-        var closest: String? = null
-        for (compareObject in collection) {
-            val currentDistance =
-                LevenshteinDistance.getDefaultInstance().apply(compareObject, target)
-            Log.d(
-                TAG, "comparing: $compareObject with $target distance: $currentDistance"
-            )
-            if (currentDistance < currMinDistance) {
-                currMinDistance = currentDistance
-                closest = compareObject
-            }
-        }
-        Log.i(TAG, "Closest match: $closest")
-        Log.i(
-            TAG,
-            "Distance: $currMinDistance; max allowed: ${maxLevenshteinDistanceFromTarget(target)}"
-        )
-        if (currMinDistance > maxLevenshteinDistanceFromTarget(target)) closest = null
-        return closest
-    }
-
+    /**
+     * Loads the TPER stops data from file.
+     *
+     * @param context The context of the application.
+     */
     private fun loadData(context: Context) {
         coordinates = mutableMapOf()
         try {
@@ -125,8 +122,8 @@ class TperUtilities(context: Context) {
             br.readLine() //skip the first line
             var line: String?
             while (br.readLine().also { line = it } != null) {
-                val data =
-                    line?.split(context.getString(R.string.tper_dictionary_separator))?.toTypedArray()
+                val data = line?.split(context.getString(R.string.tper_dictionary_separator))
+                    ?.toTypedArray()
                 if (data != null) {
                     val stopCode = Integer.valueOf(data[0])
                     val stopName = data[1]
@@ -147,10 +144,48 @@ class TperUtilities(context: Context) {
 
     companion object {
         private val TAG = TperUtilities::class.java.simpleName
+
+        /** Levenshtein Max Distance Ratio */
         private const val LEVENSHTEIN_MAX_DISTANCE_RATIO = 0.6
 
-        fun maxLevenshteinDistanceFromTarget(target: String): Int {
-            return (target.length * LEVENSHTEIN_MAX_DISTANCE_RATIO).toInt()
+        /**
+         * Returns the maximum Levenshtein from [target] allowed for a string to be considered a
+         * valid match.
+         *
+         * @param target The target string.
+         * @return The maximum Levenshtein distance from [target].
+         */
+        private fun maxLevenshteinDistanceFromTarget(target: String): Int {
+            return ceil(target.length * LEVENSHTEIN_MAX_DISTANCE_RATIO).toInt()
+        }
+
+        /**
+         * Searches for the closest match of a string to be searched in a list of strings.
+         * It uses the Levenshtein distance algorithm, with a maximum distance obtained by
+         * [maxLevenshteinDistanceFromTarget].
+         *
+         * @param collection The collection in which to search for the closest match.
+         * @param toSearch The target string.
+         *
+         * @return The closest match, i.e the string in [collection] that is the closest to
+         * [toSearch], or null if no match is found.
+         */
+        private fun findClosestMatch(collection: Collection<String>, toSearch: String): String? {
+            var currMinDistance = Int.MAX_VALUE
+            var closest: String? = null
+            for (compareObject in collection) {
+                val currentDistance =
+                    LevenshteinDistance.getDefaultInstance().apply(compareObject, toSearch)
+                if (currentDistance < currMinDistance) {
+                    currMinDistance = currentDistance
+                    closest = compareObject
+                }
+            }
+            val maxDistance = maxLevenshteinDistanceFromTarget(toSearch)
+            Log.i(TAG, "Min distance found: $currMinDistance; max allowed: $maxDistance")
+
+            if (currMinDistance > maxDistance) closest = null
+            return closest
         }
     }
 }
