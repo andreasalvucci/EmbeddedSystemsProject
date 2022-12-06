@@ -30,6 +30,7 @@ import com.google.mlkit.vision.text.*;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -42,12 +43,18 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.location.GnssAntennaInfo;
 import android.media.Image;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Size;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -78,12 +85,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -107,16 +116,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MaterialButton torchButton;
     private MaterialButton helpButton;
     private boolean torchIsOn = false;
+    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
+    private boolean isInternetAvailable = false;
 
     private final float ZOOM_STEP = 0.1f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                .build();
+
+
+
+
+
+
+
+
         if(!checkPermission())
             requestPermission();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+
+
+        ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                super.onAvailable(network);
+                Log.d("NET_MONITORING", "NETWORK IS AVAILABLE");
+                isInternetAvailable = true;
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                super.onLost(network);
+                isInternetAvailable = false;
+                showNoConnectionDialog();
+            }
+
+            @Override
+            public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
+                super.onCapabilitiesChanged(network, networkCapabilities);
+                final boolean unmetered = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+            }
+        };
+
+        ConnectivityManager connectivityManager =
+                null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            connectivityManager = (ConnectivityManager) getSystemService(ConnectivityManager.class);
+        }
+        connectivityManager.requestNetwork(networkRequest, networkCallback);
 
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
         cronetEngine = myBuilder.build();
@@ -155,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         picture_bt.setOnClickListener(this);
-
 
 
         provider = ProcessCameraProvider.getInstance(this);
@@ -271,14 +325,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private boolean checkPermission(){
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        return false;
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_SETTINGS) != PackageManager.PERMISSION_GRANTED)
+                    return false;
+            }
         }
         return true;
     }
 
     private void requestPermission(){
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET,
+        Manifest.permission.CHANGE_NETWORK_STATE, Manifest.permission.WRITE_SETTINGS}, PERMISSION_REQUEST_CODE);
     }
 
     public void onRequestPermissionResult(int requestCode, String permissions[], int[] grantResults){
@@ -308,6 +367,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;*/
         }
 
+    }
+
+    private void showNoConnectionDialog(){
+        NoInternetBottomSheetDialog noInternetBottomSheetDialog = new NoInternetBottomSheetDialog();
+        noInternetBottomSheetDialog.show(getSupportFragmentManager(), "ModalBottomSheet");
     }
 
     public void capturePhoto(){
@@ -452,7 +516,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     },3000);
                     if(busCodeScanning){
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = "https://tper-backend.herokuapp.com/fermata/"+stopName;
+                        String url = SERVER_HOSTNAME+"/fermata/"+stopName;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
                                 , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName)),progressBar), executor);
@@ -470,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if(codiciFermate.size()==1){
                             int codice = codiciFermate.get(0);
                             Executor executor = Executors.newSingleThreadExecutor();
-                            String url = "https://tper-backend.herokuapp.com/fermata/"+codice;
+                            String url = "https://tper-backend.onrender.com/fermata/"+codice;
                             Log.d("LASTRING",url);
                             UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
                                     , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice),progressBar), executor);
@@ -513,5 +577,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private void showBusStopCodeTutorial(){
         Toast.makeText(getApplicationContext(),"Aiuto premuto", Toast.LENGTH_SHORT).show();
+    }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("google.com");
+            //You can replace it with your name
+            return !ipAddr.equals("");
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isConnectingToInternet() {
+        ConnectivityManager cm = (ConnectivityManager) this.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null) { // connected to the internet
+            try {
+                URL url = new URL("http://www.google.com");
+                HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+                urlc.setConnectTimeout(300);
+                urlc.connect();
+                if (urlc.getResponseCode() == 200) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                return false;
+            }
+        }
+        return false;
     }
     }

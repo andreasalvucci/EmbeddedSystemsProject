@@ -55,6 +55,8 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private ScaleBarOverlay scaleBarOverlay;
     Drawable busStopMarker;
     private ProgressBar progressBar;
+    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
+
 
     public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
         this.context = context;
@@ -106,7 +108,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = "https://tper-backend.herokuapp.com/fermata/"+code;
+                        String url = SERVER_HOSTNAME+"/fermata/"+code;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
                                 , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar), executor);
