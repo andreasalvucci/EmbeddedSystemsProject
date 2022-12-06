@@ -296,7 +296,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 val busStopName = tper.getMoreSimilarBusStop(stopName)
                 Log.d(TAG, "bus Stop: $busStopName")
                 progressBar.visibility = View.INVISIBLE
-                val toastText = busStopName ?: getString(R.string.bus_stop_not_recognized)
+                val toastText = busStopName.ifEmpty { getString(R.string.bus_stop_not_recognized) }
                 Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT).show()
                 cropArea.visibility = View.VISIBLE
                 cropArea.background = ResourcesCompat.getDrawable(
