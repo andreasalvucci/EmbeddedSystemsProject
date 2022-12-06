@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Bundle
 import android.os.Handler
-import androidx.preference.PreferenceManager
 import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
@@ -18,12 +17,12 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.camera.core.*
-import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.preference.PreferenceManager
 import com.example.cameraapp2.tper.TperUtilities
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -230,24 +229,21 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         Log.d(TAG, "pViewInfo ${previewView.width} x ${previewView.height}")
         Size(previewView.width, previewView.height)
         "ANDREA_" + SimpleDateFormat("yyyyMMDD_HHmmss").format(Date()) + ".jpeg"
-        imageCapture.takePicture(executor, object : OnImageCapturedCallback() {
-            override fun onCaptureSuccess(image: ImageProxy) {
-                super.onCaptureSuccess(image)
-                try {
-                    val bitmapImage = convertImageProxyToBitmap(image)
-                    val croppedPhoto = cropImage(bitmapImage, previewView, cropArea)
-                    val croppedPhotoBitmap =
-                        BitmapFactory.decodeByteArray(croppedPhoto, 0, croppedPhoto.size)
-                    image.close()
-                    progressBar!!.visibility = View.VISIBLE
-                    cropArea!!.visibility = View.INVISIBLE
-                    runInference(croppedPhotoBitmap)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
-                }
+        imageCapture.takePicture(executor) { image ->
+            try {
+                val bitmapImage = convertImageProxyToBitmap(image)
+                val croppedPhoto = cropImage(bitmapImage, previewView, cropArea)
+                val croppedPhotoBitmap =
+                    BitmapFactory.decodeByteArray(croppedPhoto, 0, croppedPhoto.size)
+                image.close()
+                progressBar?.visibility = View.VISIBLE
+                cropArea?.visibility = View.INVISIBLE
+                runInference(croppedPhotoBitmap)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
             }
-        })
+        }
     }
 
     private fun convertImageProxyToBitmap(image: ImageProxy): Bitmap {
@@ -398,7 +394,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showBusStopCodeTutorial() {
-        Toast.makeText(applicationContext, "Aiuto premuto", Toast.LENGTH_SHORT).show()
+        val helpBottomSheetDialog = HelpBottomSheetDialog()
+        helpBottomSheetDialog.show(supportFragmentManager, "ModalBottomSheet")
     }
 
     companion object {
