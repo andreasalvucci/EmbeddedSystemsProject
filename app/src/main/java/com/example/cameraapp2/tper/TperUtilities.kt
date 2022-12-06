@@ -123,17 +123,19 @@ class TperUtilities(context: Context) {
             val isr = InputStreamReader(inputStream)
             val br = BufferedReader(isr)
             br.readLine() //skip the first line
-            var line: String
+            var line: String?
             while (br.readLine().also { line = it } != null) {
                 val data =
-                    line.split(context.getString(R.string.tper_dictionary_separator)).toTypedArray()
-                val stopCode = Integer.valueOf(data[0])
-                val stopName = data[1]
-                val latitude = data[6].replace(",", ".").toDouble()
-                val longitude = data[7].replace(",", ".").toDouble()
-                val stopGeoPoint = GeoPoint(latitude, longitude)
-                coordinates[stopCode] = stopGeoPoint
-                busStopDictionary[stopCode] = stopName
+                    line?.split(context.getString(R.string.tper_dictionary_separator))?.toTypedArray()
+                if (data != null) {
+                    val stopCode = Integer.valueOf(data[0])
+                    val stopName = data[1]
+                    val latitude = data[6].replace(",", ".").toDouble()
+                    val longitude = data[7].replace(",", ".").toDouble()
+                    val stopGeoPoint = GeoPoint(latitude, longitude)
+                    coordinates[stopCode] = stopGeoPoint
+                    busStopDictionary[stopCode] = stopName
+                }
             }
             br.close()
             isr.close()
