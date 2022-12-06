@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 
+import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
@@ -12,6 +13,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class Recognizer {
     private final TextRecognizer textRecognizer;
@@ -29,7 +31,7 @@ public class Recognizer {
 
         int stopNumber = 0;
 
-        textRecognizer.process(inputImage).addOnSuccessListener(text -> {
+        Task<Text> result =  textRecognizer.process(inputImage).addOnSuccessListener(text -> {
             List<String> allWords = getWordsFromText(text);
             StringBuilder wordToExamineBuilder = new StringBuilder();
 
