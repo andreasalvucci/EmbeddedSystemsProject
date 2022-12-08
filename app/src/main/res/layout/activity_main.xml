@@ -127,6 +127,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
+    <TextView
+        android:id="@+id/waiting_for_tper_response_activity_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/waiting_for_tper_response"
+        android:textColor="#616161"
+        android:textSize="21sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@+id/image_capture_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/crop_area" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/image_capture_button"
         android:layout_width="110dp"

@@ -116,8 +116,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MaterialButton torchButton;
     private MaterialButton helpButton;
     private boolean torchIsOn = false;
-    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
+    private final String SERVER_HOSTNAME = "https://scrawny-concise-lilac.glitch.me";
     private boolean isInternetAvailable = false;
+    private TextView waitingForTperResponse;
 
     private final float ZOOM_STEP = 0.1f;
 
@@ -129,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                 .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .build();
+
+
 
 
 
@@ -175,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(MainActivity.this);
         cronetEngine = myBuilder.build();
+        waitingForTperResponse = findViewById(R.id.waiting_for_tper_response_activity_main);
+        waitingForTperResponse.setVisibility(View.INVISIBLE);
 
         zoomInButton = findViewById(R.id.zoomInbutton);
         zoomOutButton = findViewById(R.id.zoomOutButton);
@@ -475,6 +480,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         InputImage inputImage = InputImage.fromBitmap(image,0);
 
         Recognizer recognizer1 = new Recognizer(image);
+        waitingForTperResponse.setVisibility(View.VISIBLE);
 
 
         Integer stopNumber = recognizer1.getStopNumber(new RecognizerCallback() {
@@ -519,7 +525,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String url = SERVER_HOSTNAME+"/fermata/"+stopName;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName)),progressBar), executor);
+                                , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(Integer.valueOf(stopName)),progressBar, waitingForTperResponse), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                     }
@@ -537,7 +543,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             String url = "https://tper-backend.onrender.com/fermata/"+codice;
                             Log.d("LASTRING",url);
                             UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                    , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice),progressBar), executor);
+                                    , new MyUrlRequestCallback(getSupportFragmentManager(),tper.getBusStopByCode(codice),progressBar, waitingForTperResponse), executor);
                             UrlRequest request = requestBuilder.build();
                             request.start();
                         }

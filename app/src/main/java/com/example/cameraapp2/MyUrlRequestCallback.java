@@ -1,11 +1,10 @@
 package com.example.cameraapp2;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.fragment.app.FragmentManager;
 
@@ -15,15 +14,11 @@ import org.chromium.net.UrlResponseInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.JSONParser.*;
 import org.json.simple.parser.ParseException;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +30,13 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
     private FragmentManager supportFragmentManager;
     private String stopName;
     private ProgressBar progressBar;
+    private TextView waitingForTperResponse;
 
-    public MyUrlRequestCallback(FragmentManager fm, String stopName, ProgressBar progressBar){
+    public MyUrlRequestCallback(FragmentManager fm, String stopName, ProgressBar progressBar, TextView waitingForTperResponse){
         this.supportFragmentManager=fm;
         this.stopName = stopName;
         this.progressBar = progressBar;
+        this.waitingForTperResponse = waitingForTperResponse;
     }
 
 
@@ -102,7 +99,9 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         } catch (JSONException e ) {
             e.printStackTrace();
         }
+
         progressBar.setVisibility(View.INVISIBLE);
+        waitingForTperResponse.setVisibility(View.INVISIBLE);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getMapFromJson(responseBodyString),this.stopName);
         bottomSheetDialog.show(supportFragmentManager,"ModalBottomSheet");
 

@@ -22,11 +22,25 @@
         android:layout_width="match_parent"
         android:layout_height="10dp" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/waiting_for_tper_response"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/waiting_for_tper_response"
+            android:textAlignment="center"
+            android:textSize="16sp" />
+    </LinearLayout>
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"

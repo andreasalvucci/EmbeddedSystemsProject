@@ -22,7 +22,8 @@
     <string name="infoText">Se il codice della fermata non è presente, premi questo bottone e scansiona il nome della fermata</string>
     <string name="tper_dictionary_separator">;</string>
     <string name="non_existent_bus_stop">FERMATA NON ESISTENTE</string>
+    <string name="waiting_for_tper_response">Stiamo ricevendo la risposta da TPER...</string>
     <string name="non_existent_bus_stop_code">La scansione risulta invalida oppure
         il codice della fermata non esiste. Fai tap su Aiuto per scoprire come scansionare il codice della fermata</string>
-    <string name="no_internet_text">Ops! Sembra che il tuo dispositivo non abbia accesso ad Internet. Affinché NoTBus funzioni, avrai bisognodi una connessione stabile. Per favore, controlla la tua connessione e riprova. Grazie.</string>
+    <string name="no_internet_text">Ops! Sembra che il tuo dispositivo non abbia accesso ad Internet. Affinché NoTBus funzioni, avrai bisogno di una connessione stabile. Per favore, controlla la tua connessione e riprova. Grazie.</string>
 </resources>

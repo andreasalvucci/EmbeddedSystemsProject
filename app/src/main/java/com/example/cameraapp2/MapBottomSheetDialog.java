@@ -2,20 +2,14 @@ package com.example.cameraapp2;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.icu.number.Scale;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -24,19 +18,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UrlRequest;
 import org.osmdroid.api.IMapController;
-import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
-import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +42,10 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private TperUtilities tper;
     private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
     private ScaleBarOverlay scaleBarOverlay;
+    private TextView waitingForTperResponse;
     Drawable busStopMarker;
     private ProgressBar progressBar;
-    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
+    private final String SERVER_HOSTNAME = "https://scrawny-concise-lilac.glitch.me";
 
 
     public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
@@ -63,6 +53,8 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         this.punti = coordinate;
         this.codes = codici;
         this.tper = tper;
+
+
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
@@ -81,6 +73,9 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
         busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
+        waitingForTperResponse = v.findViewById(R.id.waiting_for_tper_response);
+        waitingForTperResponse.setVisibility(View.INVISIBLE);
+
 
         progressBar = v.findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
@@ -102,6 +97,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                     @Override
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                        waitingForTperResponse.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.VISIBLE);
 
                         int code = Integer.valueOf(item.getTitle());
@@ -111,7 +107,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         String url = SERVER_HOSTNAME+"/fermata/"+code;
                         Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar, waitingForTperResponse), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                         //do something
