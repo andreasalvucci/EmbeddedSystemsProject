@@ -9,11 +9,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
 
+import com.example.cameraapp2.tper.TperUtilities;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.net.CronetEngine;
@@ -33,46 +33,55 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import com.example.cameraapp2.tper.TperUtilities;
-
 public class MapBottomSheetDialog extends BottomSheetDialogFragment {
+
     CronetEngine cronetEngine;
     Context context;
-    private final List<GeoPoint> geoPoints;
-    private final TperUtilities tper;
-    private final ArrayList<OverlayItem> items = new ArrayList<>();
+    private MapView mapView;
+    private List<GeoPoint> punti;
+    private List<Integer> codes;
+    private TperUtilities tper;
+    private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+    private ScaleBarOverlay scaleBarOverlay;
+    private TextView waitingForTperResponse;
     Drawable busStopMarker;
     private ProgressBar progressBar;
+    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
 
-    public MapBottomSheetDialog(Context context, @NonNull List<GeoPoint> coordinates, List<Integer> codes, TperUtilities tper) {
+
+    public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
         this.context = context;
-        this.geoPoints = coordinates;
+        this.punti = coordinate;
+        this.codes = codici;
         this.tper = tper;
+
+
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
-        for (int i = 0; i < coordinates.size(); i++) {
-            try {
-                int code = codes.get(i);
-                GeoPoint point = coordinates.get(i);
-                items.add(new OverlayItem(String.valueOf(code), "Description", point));
-            } catch (IndexOutOfBoundsException e) {
-                Log.e("MapBottomSheetDialog", "EXCEPTION: " + e);
-            }
+
+        int i = 0;
+        for (i = 0; i<coordinate.size();i++){
+            int codice= codici.get(i);
+            GeoPoint punto = coordinate.get(i);
+            items.add(new OverlayItem(String.valueOf(codice), "Description",punto));
         }
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable
-            ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable
+            ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
-        busStopMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.bus_stop, null);
+        busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
+        waitingForTperResponse = v.findViewById(R.id.waiting_for_tper_response);
+        waitingForTperResponse.setVisibility(View.INVISIBLE);
+
 
         progressBar = v.findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.INVISIBLE);
-        MapView mapView = v.findViewById(R.id.map);
+        mapView = v.findViewById(R.id.map);
         mapView.setUseDataConnection(true);
 
 
@@ -82,26 +91,27 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         mapView.setMultiTouchControls(true);
         IMapController mapController = mapView.getController();
         mapController.setZoom(20.0);
-        GeoPoint startPoint = new GeoPoint(geoPoints.get(0));
+        GeoPoint startPoint = new GeoPoint(punti.get(0));
         mapController.setCenter(startPoint);
 
-        ItemizedOverlay<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(items,
+        ItemizedOverlay<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<OverlayItem>(items,
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                     @Override
                     public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                        waitingForTperResponse.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.VISIBLE);
 
-                        int code = Integer.parseInt(item.getTitle());
+                        int code = Integer.valueOf(item.getTitle());
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = "https://tper-backend.herokuapp.com/fermata/" + code;
-                        Log.d("LASTRING", url);
+                        String url = SERVER_HOSTNAME+"/fermata/"+code;
+                        Log.d("LASTRING",url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(), stopName, progressBar), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar, waitingForTperResponse), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
-
+                        //do something
                         return true;
                     }
 
@@ -110,17 +120,16 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         return false;
                     }
                 }, getContext());
-
-        for (int i = 0; i < mOverlay.size(); i++) {
+        for(int i=0;i<mOverlay.size();i++){
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
-
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(mapView);
+        scaleBarOverlay = new ScaleBarOverlay(mapView);
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 
         mapView.getOverlays().add(mOverlay);
+
 
         return v;
     }
