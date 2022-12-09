@@ -12,37 +12,98 @@
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="206dp"
-        tools:layout_editor_absoluteY="10dp">
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="-27dp">
 
     </androidx.camera.view.PreviewView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/zoomOutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_baseline_zoom_out_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toEndOf="@+id/viewFinder"
+        app:layout_constraintStart_toEndOf="@+id/image_capture_button"
+        app:layout_constraintTop_toBottomOf="@+id/zoomInbutton" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/zoomInbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/ic_baseline_zoom_in_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/image_capture_button"
+        app:layout_constraintTop_toBottomOf="@+id/crop_area" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/torchButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/torch_button_text"
+        app:icon="@drawable/ic_baseline_flashlight_on_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toStartOf="@+id/image_capture_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/crop_area" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/helpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/help_button_text"
+        app:icon="@drawable/ic_baseline_help_24"
+        app:layout_constraintBottom_toTopOf="@+id/toolbar"
+        app:layout_constraintEnd_toStartOf="@+id/image_capture_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/torchButton" />
+
+    <TextView
+        android:id="@+id/scan_here_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="@string/scan_here_text_view_text_code"
+        android:textColor="#616161"
+        android:textSize="21sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@+id/crop_area"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:background="@color/md_theme_dark_onPrimary"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:theme="@style/AppTheme"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/image_capture_button" />
 
     <TextView
         android:id="@+id/infoText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/infoText"
+        android:textColor="@color/md_theme_light_inversePrimary"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/switch3"
-        app:layout_constraintTop_toTopOf="@+id/viewFinder" />
+        app:layout_constraintStart_toEndOf="@+id/scan_by_stop_name"
+        app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch3"
+        android:id="@+id/scan_by_stop_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minHeight="32dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="20dp"
+        android:minHeight="48dp"
+        android:shadowColor="@color/design_default_color_secondary"
+        app:layout_constraintStart_toStartOf="@+id/toolbar"
+        app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
     <ProgressBar
         android:id="@+id/indeterminateBar"
@@ -65,41 +126,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!--
-    <com.example.cameraapp2.RectOverlay
-        android:id="@+id/rectOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
--->
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/image_capture_button"
         android:layout_width="110dp"
         android:layout_height="110dp"
-        android:layout_marginEnd="50dp"
         android:layout_marginBottom="50dp"
         android:elevation="2dp"
         android:text="@string/take_photo"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/vertical_centerline"
-        app:layout_constraintLeft_toLeftOf="parent" />
-
-    <Button
-        android:id="@+id/video_capture_button"
-        android:layout_width="110dp"
-        android:layout_height="110dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginBottom="50dp"
-        android:elevation="2dp"
-        android:text="@string/start_capture"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/vertical_centerline" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/vertical_centerline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".50" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/crop_area" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

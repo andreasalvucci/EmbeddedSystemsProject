@@ -1,10 +1,32 @@
 <resources>
-    <string name="app_name">CameraApp2</string>
-    <string name="take_photo">Take Photo</string>
+    <string name="app_name">NoTBus</string>
+    <string name="maximum_level_of_zoom_reached">Massimo livello di ingrandimento raggiunto</string>
+    <string name="minimum_level_of_zoom_reached">Minimo livello di ingrandimento raggiunto</string>
+    <string name="intro_paragraph_text">Con NoTBus, puoi ricevere informazioni in tempo reale sull\'arrivo degli autobus scansionando la pensilina</string>
+    <string name="first_paragraph_text">Se la fermata dell\'autobus in cui ti trovi dispone del codice univoco della fermata, allora scansiona quello</string>
+    <string name="second_paragraph_text">Altrimenti puoi scansionare il nome della fermata, ti verrà poi chiesto di individuare quella in cui ti trovi su una minimappa</string>
+    <string name="torch_button_text">Torcia</string>
+    <string name="tutorial_title">Tutorial</string>
+    <string name="credits_text">Sviluppato da Andrea Salvucci e Lorenzo Felletti</string>
+    <string name="help_button_text">Aiuto</string>
+    <string name="zoom_in_button_text">+</string>
+    <string name="zoom_out_button_text">-</string>
+    <string name="take_photo">Scan</string>
     <string name="start_capture">Analyze</string>
+    <string name="scan_here_text_view_text_code">Scansiona il codice della fermata</string>
+    <string name="scan_here_text_view_text_name">Scansiona il nome della fermata</string>
+    <string name="slide_to_zoom_text">Scorri per fare zoom</string>
+    <string name="map_bottom_sheet_layout_text">Fai tap sulla fermata desiderata</string>
     <string name="HOST">https://tper-backend.herokuapp.com</string>
     <string name="PORT">3000</string>
     <string name="infoText">Se il codice della fermata non è presente, premi questo bottone e scansiona il nome della fermata</string>
     <string name="tper_dictionary_separator">;</string>
     <string name="non_existent_bus_stop">FERMATA NON ESISTENTE</string>
+    <string name="non_existent_bus_stop_code">La scansione risulta invalida oppure
+        il codice della fermata non esiste. Fai tap su Aiuto per scoprire come scansionare il codice della fermata</string>
+    <string name="non_existent_dialog_title">Attenzione</string>
+    <string name="non_existent_dialog_neg_btn">Aiuto</string>
+    <string name="non_existent_dialog_pos_btn">Ok</string>
+    <string name="tutorial_toast_text">Aiuto premuto</string>
+    <string name="bus_stop_not_recognized">Fermata non trovata</string>
 </resources>
