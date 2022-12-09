@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MaterialButton torchButton;
     private MaterialButton helpButton;
     private boolean torchIsOn = false;
-    private final String SERVER_HOSTNAME = "https://scrawny-concise-lilac.glitch.me";
+    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
     private boolean isInternetAvailable = false;
     private TextView waitingForTperResponse;
 

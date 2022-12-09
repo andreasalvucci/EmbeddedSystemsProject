@@ -97,6 +97,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
            // results.put("headers", reqHeaders);
             results.put("body", responseBodyString);
         } catch (JSONException e ) {
+            Log.e("JSONEXCEPTION", "eccezione");
             e.printStackTrace();
         }
 
@@ -188,6 +189,9 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
 
         for(int i=0; i<buses.length();i++){
             String line = buses.getJSONObject(i).getString("Line");
+            if(line.startsWith("OGGI")){
+                return new ArrayList<>();
+            }
             String time = buses.getJSONObject(i).getString("Time");
             List<String> lineAndTime = new ArrayList<>();
             lineAndTime.add(line);

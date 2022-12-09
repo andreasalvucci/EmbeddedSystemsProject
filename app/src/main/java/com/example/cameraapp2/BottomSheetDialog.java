@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -28,6 +29,10 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     {
         View v = inflater.inflate(R.layout.bottom_sheet_layout,
                 container, false);
+        if(listaAutobus.size()==0){
+            Toast.makeText(inflater.getContext(), "Nessuna altra corsa prevista per oggi", Toast.LENGTH_SHORT).show();
+            return null;
+        }
 
         Button button_chiudi = v.findViewById(R.id.retry_button);
         TextView nome_fermata = v.findViewById(R.id.nome_fermata);

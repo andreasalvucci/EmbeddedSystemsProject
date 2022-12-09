@@ -45,7 +45,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private TextView waitingForTperResponse;
     Drawable busStopMarker;
     private ProgressBar progressBar;
-    private final String SERVER_HOSTNAME = "https://scrawny-concise-lilac.glitch.me";
+    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
 
 
     public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
