@@ -63,7 +63,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
             inarrivo2.setVisibility(View.INVISIBLE);
 
 
-            Toast.makeText(inflater.getContext(), "Nessuna altra corsa prevista per oggi", Toast.LENGTH_SHORT).show();
+
             nome_fermata.setText("Nessun'altra corsa prevista per oggi");
             codice_bus1.setVisibility(View.INVISIBLE);
             codice_bus_2.setVisibility(View.INVISIBLE);
