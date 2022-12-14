@@ -139,7 +139,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
         val preview = Preview.Builder().build()
-        val viewPort = previewView.viewPort
         preview.setSurfaceProvider(previewView.surfaceProvider)
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
@@ -208,32 +207,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             )
         }
     }
-
-    private fun checkPermission(): Boolean {
-
-
-        return (ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    private fun requestPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET
-                , Manifest.permission.ACCESS_NETWORK_STATE,
-            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-            PERMISSION_REQUEST_CODE
-        )
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -314,7 +287,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             Bitmap.CompressFormat.JPEG,
             100,
             stream
-        ) //100 is the best quality possibe
+        ) //100 is the best quality possible
         return stream.toByteArray()
     }
 

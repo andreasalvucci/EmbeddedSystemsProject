@@ -13,6 +13,10 @@
     <string name="zoom_out_button_text">-</string>
     <string name="take_photo">Scan</string>
     <string name="start_capture">Analyze</string>
+    <string name="content_prima_immagine_tutorial">Prima immagine</string>
+    <string name="content_seconda_immagine_tutorial">Seconda immagine</string>
+    <string name="content_terza_immagine_tutorial">Terza immagine</string>
+    <string name="chiudi">Chiudi</string>
     <string name="scan_here_text_view_text_code">Scansiona il codice della fermata</string>
     <string name="scan_here_text_view_text_name">Scansiona il nome della fermata</string>
     <string name="slide_to_zoom_text">Scorri per fare zoom</string>

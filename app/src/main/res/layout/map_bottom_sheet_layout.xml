@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/map_bottom_sheet_layout_text"
+    style="@style/ThemeOverlay.Material3.BottomSheetDialog"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@color/md_theme_dark_background"
     android:orientation="vertical">
 
     <Space
@@ -16,6 +19,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/map_bottom_sheet_layout_text"
+        android:textColor="@android:color/holo_orange_dark"
         android:textSize="18sp" />
 
     <Space
@@ -31,7 +35,8 @@
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:indeterminateTint="@android:color/holo_orange_light" />
 
         <TextView
             android:id="@+id/waiting_for_tper_response"
@@ -39,11 +44,13 @@
             android:layout_height="wrap_content"
             android:text="@string/waiting_for_tper_response"
             android:textAlignment="center"
+            android:textColor="@android:color/holo_orange_light"
             android:textSize="16sp" />
     </LinearLayout>
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent"
+        android:theme="@style/MaterialAlertDialog.Material3" />
 </LinearLayout>
