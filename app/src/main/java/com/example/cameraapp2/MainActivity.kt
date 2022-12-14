@@ -2,6 +2,7 @@ package com.example.cameraapp2
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,20 +10,24 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Bundle
 import android.os.Handler
+import android.os.SystemClock
+import androidx.preference.PreferenceManager
 import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
+import android.view.Surface.ROTATION_0
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.camera.core.*
+import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.preference.PreferenceManager
+import androidx.lifecycle.LifecycleOwner
 import com.example.cameraapp2.tper.TperUtilities
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -40,7 +45,8 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
-    private var provider: ListenableFuture<ProcessCameraProvider>? = null
+    private lateinit var waitingForTperTextView: TextView
+    private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
     private var cropArea: View? = null
     private var scanHereTextView: TextView? = null
     private var pictureBtn: Button? = null
@@ -56,18 +62,25 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var torchButton: MaterialButton? = null
     private lateinit var helpButton: MaterialButton
     private var torchIsOn = false
+    private lateinit var permissionsArray: Array<String>
     private val executor
         get() = ContextCompat.getMainExecutor(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (!checkPermission()) requestPermission()
         super.onCreate(savedInstanceState)
+        permissionsArray = arrayOf(Manifest.permission.CAMERA,Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        myCheckPermissions(permissionsArray)
+
         setContentView(R.layout.activity_main)
         Configuration.getInstance().load(
             applicationContext, PreferenceManager.getDefaultSharedPreferences(
                 applicationContext
             )
         )
+        waitingForTperTextView = findViewById(R.id.waiting_for_tper_response_main)
 
         cronetEngine = CronetEngine.Builder(this@MainActivity).build()
         zoomInButton = findViewById(R.id.zoomInbutton)
@@ -93,24 +106,35 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
         pictureBtn?.setOnClickListener(this)
-        provider = ProcessCameraProvider.getInstance(this)
-        provider!!.addListener({
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture!!.addListener({
             try {
-                val cameraProvider = provider!!.get()
+                val cameraProvider = cameraProviderFuture!!.get()
                 startCamera(cameraProvider)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }, executor)
+        }, ContextCompat.getMainExecutor(this))
+
         helpButton.setOnClickListener {
             val helpBottomSheetDialog = HelpBottomSheetDialog()
             helpBottomSheetDialog.show(supportFragmentManager, "ModalBottomSheet")
         }
     }
 
+    private fun myCheckPermissions(permissions: Array<String>) {
+        for (permission in permissions) {
+            // Check if the permission is granted or not
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                // Permission is not granted, request it
+                ActivityCompat.requestPermissions(this, arrayOf(permission), PERMISSION_REQUEST_CODE)
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun startCamera(cameraProvider: ProcessCameraProvider) {
-        cameraProvider.unbindAll()
+
         val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
@@ -120,12 +144,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
+        cameraProvider.unbindAll()
         val useCaseGroup = UseCaseGroup.Builder()
-            .setViewPort(viewPort!!)
             .addUseCase(preview)
             .addUseCase(imageCapture)
             .build()
-        val camera = cameraProvider.bindToLifecycle(this, cameraSelector, useCaseGroup)
+        val camera = cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, useCaseGroup)
         val cameraControl = camera.cameraControl
         previewView.setOnTouchListener { _: View?, motionEvent: MotionEvent ->
             val factory = previewView.meteringPointFactory
@@ -186,20 +210,26 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun checkPermission(): Boolean {
+
+
         return (ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
-                )
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
+        )
     }
 
     private fun requestPermission() {
         ActivityCompat.requestPermissions(
             this,
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET
+                , Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
             PERMISSION_REQUEST_CODE
         )
     }
@@ -229,21 +259,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         Log.d(TAG, "pViewInfo ${previewView.width} x ${previewView.height}")
         Size(previewView.width, previewView.height)
         "ANDREA_" + SimpleDateFormat("yyyyMMDD_HHmmss").format(Date()) + ".jpeg"
-        imageCapture.takePicture(executor) { image ->
-            try {
-                val bitmapImage = convertImageProxyToBitmap(image)
-                val croppedPhoto = cropImage(bitmapImage, previewView, cropArea)
-                val croppedPhotoBitmap =
-                    BitmapFactory.decodeByteArray(croppedPhoto, 0, croppedPhoto.size)
-                image.close()
-                progressBar?.visibility = View.VISIBLE
-                cropArea?.visibility = View.INVISIBLE
-                runInference(croppedPhotoBitmap)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
+        imageCapture.takePicture(executor, object : OnImageCapturedCallback() {
+            override fun onCaptureSuccess(image: ImageProxy) {
+                super.onCaptureSuccess(image)
+                try {
+                    val bitmapImage = convertImageProxyToBitmap(image)
+                    val croppedPhoto = cropImage(bitmapImage, previewView, cropArea)
+                    val croppedPhotoBitmap =
+                        BitmapFactory.decodeByteArray(croppedPhoto, 0, croppedPhoto.size)
+                    image.close()
+                    progressBar!!.visibility = View.VISIBLE
+                    cropArea!!.visibility = View.INVISIBLE
+                    runInference(croppedPhotoBitmap)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
+                }
             }
-        }
+        })
     }
 
     private fun convertImageProxyToBitmap(image: ImageProxy): Bitmap {
@@ -324,14 +357,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }, 3000)
                 if (busCodeScanning) {
                     val executor: Executor = Executors.newSingleThreadExecutor()
-                    val url = "https://tper-backend.herokuapp.com/fermata/$stopName"
+                    val url = "https://tper-backend.onrender.com/fermata/$stopName"
                     Log.d(TAG, "URL: $url")
                     val requestBuilder = cronetEngine.newUrlRequestBuilder(
                         url,
                         MyUrlRequestCallback(
                             supportFragmentManager,
                             tper.getBusStopByCode(Integer.valueOf(stopName)),
-                            progressBar
+                            progressBar,
+                            waitingForTperTextView
                         ),
                         executor
                     )
@@ -354,14 +388,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         1 -> {
                             val stopCode = busStopsCodes[0]
                             val executor: Executor = Executors.newSingleThreadExecutor()
-                            val url = "https://tper-backend.herokuapp.com/fermata/$stopCode"
+                            val url = "https://tper-backend.onrender.com/fermata/$stopCode"
                             Log.d(TAG, "URL $url")
                             val requestBuilder = cronetEngine.newUrlRequestBuilder(
                                 url,
                                 MyUrlRequestCallback(
                                     supportFragmentManager,
                                     tper.getBusStopByCode(stopCode),
-                                    progressBar
+                                    progressBar,
+                                    waitingForTperTextView
                                 ),
                                 executor
                             )
@@ -394,13 +429,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showBusStopCodeTutorial() {
-        val helpBottomSheetDialog = HelpBottomSheetDialog()
-        helpBottomSheetDialog.show(supportFragmentManager, "ModalBottomSheet")
+        Toast.makeText(applicationContext, "Aiuto premuto", Toast.LENGTH_SHORT).show()
     }
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         private const val PERMISSION_REQUEST_CODE = 0
         private const val ZOOM_STEP = 0.1f
+        private const val HOST = "https://tper-backend.onrender.com"
     }
 }
