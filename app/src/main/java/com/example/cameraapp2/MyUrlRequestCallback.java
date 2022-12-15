@@ -37,6 +37,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback{
         this.stopName = stopName;
         this.progressBar = progressBar;
         this.waitingForTperResponse = waitingForTperResponse;
+        waitingForTperResponse.setVisibility(View.VISIBLE);
     }
 
 

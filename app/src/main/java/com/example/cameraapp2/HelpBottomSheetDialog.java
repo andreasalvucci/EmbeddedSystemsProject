@@ -9,9 +9,10 @@ import android.widget.Button;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.button.MaterialButton;
 
 public class HelpBottomSheetDialog extends BottomSheetDialogFragment {
-    private Button helpCloseButton;
+    private MaterialButton helpCloseButton;
 
     public View onCreateView(LayoutInflater inflater, @Nullable
             ViewGroup container, @Nullable Bundle savedInstanceState) {

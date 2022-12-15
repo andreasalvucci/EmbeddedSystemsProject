@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             )
         )
         waitingForTperTextView = findViewById(R.id.waiting_for_tper_response_main)
+        waitingForTperTextView.visibility = View.INVISIBLE
 
         cronetEngine = CronetEngine.Builder(this@MainActivity).build()
         zoomInButton = findViewById(R.id.zoomInbutton)
@@ -392,13 +393,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun showBusStopNotExistingDialog() {
-        MaterialAlertDialogBuilder(this@MainActivity, R.style.AppTheme)
-            .setTitle(R.string.non_existent_dialog_title)
-            .setIcon(R.drawable.ic_baseline_error_24)
-            .setMessage(R.string.non_existent_bus_stop_code)
-            .setPositiveButton(R.string.non_existent_dialog_pos_btn, null)
-            .setNegativeButton(R.string.non_existent_dialog_neg_btn) { _: DialogInterface?, _: Int -> showBusStopCodeTutorial() }
-            .show()
+
+        val busStopNotExistingDialog = ErrorBottomSheetDialog()
+        busStopNotExistingDialog.show(supportFragmentManager, "ErrorBottomSheetDialog")
+
     }
 
     private fun showBusStopCodeTutorial() {
