@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.example.cameraapp2'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.example.cameraapp2"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -55,6 +55,9 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite:2.9.0'
     implementation 'org.tensorflow:tensorflow-lite-support:0.4.2'
     implementation 'org.tensorflow:tensorflow-lite-api:2.10.0'
+
+    // permission management
+    implementation 'com.github.lorenzofelletti:permissions:0.3.4'
 
     // The GPU delegate library is optional. Depend on it as needed.
 
