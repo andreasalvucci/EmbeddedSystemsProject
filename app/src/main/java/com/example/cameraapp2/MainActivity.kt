@@ -293,10 +293,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
              * and we notify the user. */
 
             if (busCodeScanning && !tperUtilities.codeIsBusStop(stopName)) {
-                /*Log.d(TAG, "NUMBER: Non existent number")
+                Log.d(TAG, "NUMBER: Non existent number")
                 progressBar!!.visibility = View.INVISIBLE
                 cropArea!!.visibility = View.VISIBLE
-                if (!isFinishing) showBusStopNotExistingDialog()*/
+                if (!isFinishing) showBusStopNotExistingDialog()
             } else {
                 Log.wtf("message", "recognized word: $stopName")
                 Log.d(TAG, "NUMBER: $stopName")
