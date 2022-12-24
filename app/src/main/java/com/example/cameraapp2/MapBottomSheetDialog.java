@@ -27,6 +27,8 @@ import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +42,8 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private MapView mapView;
     private List<GeoPoint> punti;
     private List<Integer> codes;
-    private TperUtilities tper;
-    private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+    private final TperUtilities tper;
+    private ArrayList<OverlayItem> items = new ArrayList<>();
     private ScaleBarOverlay scaleBarOverlay;
     private TextView waitingForTperResponse;
     Drawable busStopMarker;
@@ -49,28 +51,25 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
     private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
 
 
-    public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
+    public MapBottomSheetDialog(Context context, List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper) {
         this.context = context;
         this.punti = coordinate;
         this.codes = codici;
         this.tper = tper;
 
-
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
-
-        int i = 0;
-        for (i = 0; i<coordinate.size();i++){
-            int codice= codici.get(i);
+        for (int i = 0; i < coordinate.size(); i++) {
+            int codice = codici.get(i);
             GeoPoint punto = coordinate.get(i);
-            items.add(new OverlayItem(String.valueOf(codice), "Description",punto));
+            items.add(new OverlayItem(String.valueOf(codice), "Description", punto));
         }
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable
-            ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
+            ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
         busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
@@ -101,14 +100,14 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         waitingForTperResponse.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.VISIBLE);
 
-                        int code = Integer.valueOf(item.getTitle());
+                        int code = Integer.parseInt(item.getTitle());
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = SERVER_HOSTNAME+"/fermata/"+code;
-                        Log.d("LASTRING",url);
+                        String url = SERVER_HOSTNAME + "/fermata/" + code;
+                        Log.d("LASTRING", url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar, waitingForTperResponse), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(), stopName, progressBar, waitingForTperResponse), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
                         //do something
@@ -120,7 +119,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         return false;
                     }
                 }, getContext());
-        for(int i=0;i<mOverlay.size();i++){
+        for (int i = 0; i < mOverlay.size(); i++) {
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
@@ -128,8 +127,11 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 
-        mapView.getOverlays().add(mOverlay);
+        MyLocationNewOverlay mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context),mapView);
+        mLocationOverlay.enableMyLocation();
+        mapView.getOverlays().add(mLocationOverlay);
 
+        mapView.getOverlays().add(mOverlay);
 
         return v;
     }

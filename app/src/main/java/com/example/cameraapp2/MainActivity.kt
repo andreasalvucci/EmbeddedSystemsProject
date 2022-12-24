@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var torchButton: MaterialButton
     private lateinit var helpButton: MaterialButton
 
-    private val permissionManager = PermissionManager(this)
+    private val permissionManager by lazy { PermissionManager(this) }
 
     private var torchIsOn = false
 
@@ -72,10 +72,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
 
         // declarative permission flow
-        permissionManager.buildRequestResultsDispatcher {
+        permissionManager buildRequestResultsDispatcher {
             withRequestCode(PERMISSION_REQUEST_CODE) {
                 checkPermissions(scanImagePermissions)
-                showRationaleDialog(getString(R.string.camera_rationale_dialog))
+                showRationaleDialog(
+                    message = getString(R.string.camera_rationale_dialog),
+                    positiveButtonText = getString(R.string.proceed_string),
+                    negativeButtonText = getString(R.string.dismiss_string)
+                )
                 doOnGranted {}
                 doOnDenied {
                     showPermissionsDeniedDialog(this@MainActivity)
@@ -83,7 +87,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             withRequestCode(POSITION_REQUEST_CODE) {
                 checkPermissions(positionPermissions)
-                showRationaleDialog(getString(R.string.position_rationale_dialog))
+                showRationaleDialog(
+                    message = getString(R.string.position_rationale_dialog),
+                    positiveButtonText = getString(R.string.proceed_string),
+                    negativeButtonText = getString(R.string.dismiss_string)
+                )
                 doOnDenied {
                     showPositionPermissionsDeniedDialog(this@MainActivity)
                 }
@@ -92,7 +100,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         handler = Handler(Looper.getMainLooper())
 
-        permissionManager.checkRequestAndDispatch(PERMISSION_REQUEST_CODE)
+        permissionManager checkRequestAndDispatch PERMISSION_REQUEST_CODE
 
         setContentView(R.layout.activity_main)
         Configuration.getInstance().load(
@@ -219,6 +227,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun capturePhoto() {
+        permissionManager checkRequestAndDispatch PERMISSION_REQUEST_CODE
+
         Log.d(TAG, "pViewInfo ${previewView.width} x ${previewView.height}")
         Size(previewView.width, previewView.height)
 
@@ -374,7 +384,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
 
                 // checks the permissions, and dispatch the correct action
-                permissionManager.checkRequestAndDispatch(POSITION_REQUEST_CODE)
+                permissionManager checkRequestAndDispatch POSITION_REQUEST_CODE
             }
         }
     }

@@ -57,7 +57,7 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-api:2.10.0'
 
     // permission management
-    implementation 'com.github.lorenzofelletti:permissions:0.4.0'
+    implementation 'com.github.lorenzofelletti:permissions:0.4.2'
 
     // The GPU delegate library is optional. Depend on it as needed.
 
