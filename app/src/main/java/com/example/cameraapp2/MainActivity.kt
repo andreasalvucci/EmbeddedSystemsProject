@@ -32,12 +32,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.lorenzofelletti.permissions.PermissionManager
-import com.lorenzofelletti.permissions.dispatcher.DispatcherEntry.Companion.checkPermissions
-import com.lorenzofelletti.permissions.dispatcher.DispatcherEntry.Companion.doOnDenied
-import com.lorenzofelletti.permissions.dispatcher.DispatcherEntry.Companion.doOnGranted
-import com.lorenzofelletti.permissions.dispatcher.DispatcherEntry.Companion.showRationaleDialog
-import com.lorenzofelletti.permissions.dispatcher.RequestResultsDispatcher.Companion.replaceEntryOnGranted
-import com.lorenzofelletti.permissions.dispatcher.RequestResultsDispatcher.Companion.withRequestCode
+import com.lorenzofelletti.permissions.dispatcher.dsl.*
 import org.chromium.net.CronetEngine
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
