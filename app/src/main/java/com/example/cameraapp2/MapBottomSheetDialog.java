@@ -127,9 +127,9 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 
-        //MyLocationNewOverlay mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context),mapView);
-        //mLocationOverlay.enableMyLocation();
-        //mapView.getOverlays().add(mLocationOverlay);
+        MyLocationNewOverlay mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context),mapView);
+        mLocationOverlay.enableMyLocation();
+        mapView.getOverlays().add(mLocationOverlay);
 
         mapView.getOverlays().add(mOverlay);
 
