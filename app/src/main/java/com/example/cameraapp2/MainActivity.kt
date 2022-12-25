@@ -198,14 +198,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun switchTorchIcon() {
-        if (torchIsOn) {
-            torchButton.icon = ResourcesCompat.getDrawable(
-                resources, R.drawable.ic_baseline_flashlight_off_24, null
-            )
+        torchButton.icon = if (torchIsOn) {
+            ContextCompat.getDrawable(this, R.drawable.ic_baseline_flashlight_off_24)
         } else {
-            torchButton.icon = ResourcesCompat.getDrawable(
-                resources, R.drawable.ic_baseline_flashlight_on_24, null
-            )
+            ContextCompat.getDrawable(this, R.drawable.ic_baseline_flashlight_on_24)
         }
     }
 
@@ -269,7 +265,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         recognizer.getStopNumber { stopName ->
             /* We check whether the numerical code of the bus stop exists. If it doesn't, we cannot go further
              * and we notify the user. */
-
             if (busCodeScanning && !tperUtilities.codeIsBusStop(stopName)) {
                 Log.d(TAG, "NUMBER: Non existent number")
                 progressBar!!.visibility = View.INVISIBLE
@@ -292,8 +287,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     val url = "$HOSTNAME/fermata/$stopName"
                     Log.d(TAG, "URL: $url")
                     val requestBuilder = cronetEngine.newUrlRequestBuilder(
-                        url,
-                        MyUrlRequestCallback(
+                        url, MyUrlRequestCallback(
                             supportFragmentManager,
                             tperUtilities.getBusStopByCode(Integer.valueOf(stopName)),
                             progressBar,
@@ -334,20 +328,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 val executor: Executor = Executors.newSingleThreadExecutor()
                 val url = "$HOSTNAME/fermata/$stopCode"
                 Log.d(TAG, "URL $url")
-                val requestBuilder = cronetEngine.newUrlRequestBuilder(
+                val request = cronetEngine.newUrlRequestBuilder(
                     url, MyUrlRequestCallback(
                         supportFragmentManager,
                         tperUtilities.getBusStopByCode(stopCode),
                         progressBar,
                         waitingForTperTextView
                     ), executor
-                )
-                val request = requestBuilder.build()
+                ).build()
                 request.start()
             }
             else -> {
                 // replaces the onGranted action for the location permission to show the map
-                // with the correct markers
+                // with the correct markers (if the permissions are granted)
                 permissionManager.dispatcher.replaceEntryOnGranted(POSITION_REQUEST_CODE) {
                     val mapBottomSheetDialog = MapBottomSheetDialog(
                         applicationContext, busStopsCoordinates, busStopsCodes, tperUtilities
@@ -367,7 +360,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         cropArea!!.background = ResourcesCompat.getDrawable(
             resources, R.drawable.rectangle_round_corners_green, null
         )
-        handler?.postDelayed({
+        handler.postDelayed({
             cropArea!!.background = ResourcesCompat.getDrawable(
                 resources, R.drawable.rectangle_round_corners_red, null
             )
