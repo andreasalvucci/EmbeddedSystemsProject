@@ -9,7 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 
 class BottomSheetDialog(
-    private val busesList: List<List<String>>,
+    private val busesList: MutableList<List<String>>,
     private val stopName: String
 ) : BottomSheetDialogFragment() {
     override fun onCreateView(
@@ -28,17 +28,23 @@ class BottomSheetDialog(
         val stopName = view.findViewById<TextView>(R.id.nome_fermata)
         stopName.text = this.stopName
 
-        val firstBusNumber = view.findViewById<TextView>(R.id.codice_bus_1)
-        firstBusNumber.text = busesList[0][0]
+        // fill busesList with N/A if length is less than 2
+        for (i in 0 until 2 - busesList.size) {
+            busesList.add(listOf("N/A", "N/A"))
+        }
 
-        val firstBusArrivalTime = view.findViewById<TextView>(R.id.orario_bus_1)
-        firstBusArrivalTime.text = busesList[0][1]
+        // create map of TextViews
+        val busesTextViewsMap = mapOf<TextView, TextView>(
+            view.findViewById<TextView>(R.id.codice_bus_1) to view.findViewById(R.id.orario_bus_1),
+            view.findViewById<TextView>(R.id.codice_bus_2) to view.findViewById(R.id.orario_bus_2)
+        )
 
-        val secondBusNumber = view.findViewById<TextView>(R.id.codice_bus_2)
-        secondBusNumber.text = busesList[1][0]
-
-        val secondBusArrivalTime = view.findViewById<TextView>(R.id.orario_bus_2)
-        secondBusArrivalTime.text = busesList[1][1]
+        // fill TextViews with busesList
+        for ((i, bus) in busesList.withIndex()) {
+            if (i == 2) break
+            busesTextViewsMap.keys.elementAt(i).text = bus[0]
+            busesTextViewsMap.values.elementAt(i).text = bus[1]
+        }
 
         return view
     }
