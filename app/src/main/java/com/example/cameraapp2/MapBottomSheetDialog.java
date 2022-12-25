@@ -1,5 +1,7 @@
 package com.example.cameraapp2;
 
+import static com.example.cameraapp2.tper.proxy.MyUrlRequestCallback.HOSTNAME;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import com.example.cameraapp2.tper.TperUtilities;
+import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.net.CronetEngine;
@@ -36,25 +39,21 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MapBottomSheetDialog extends BottomSheetDialogFragment {
+    private static final String TAG = MapBottomSheetDialog.class.getSimpleName();
 
     CronetEngine cronetEngine;
     Context context;
-    private MapView mapView;
-    private List<GeoPoint> punti;
-    private List<Integer> codes;
+    private final List<GeoPoint> punti;
+
     private final TperUtilities tper;
-    private ArrayList<OverlayItem> items = new ArrayList<>();
-    private ScaleBarOverlay scaleBarOverlay;
+    private final ArrayList<OverlayItem> items = new ArrayList<>();
     private TextView waitingForTperResponse;
     Drawable busStopMarker;
     private ProgressBar progressBar;
-    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
-
 
     public MapBottomSheetDialog(Context context, List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper) {
         this.context = context;
         this.punti = coordinate;
-        this.codes = codici;
         this.tper = tper;
 
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
@@ -80,7 +79,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         progressBar = v.findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.INVISIBLE);
-        mapView = v.findViewById(R.id.map);
+        MapView mapView = v.findViewById(R.id.map);
         mapView.setUseDataConnection(true);
 
 
@@ -104,13 +103,13 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = SERVER_HOSTNAME + "/fermata/" + code;
-                        Log.d("LASTRING", url);
+                        String url = HOSTNAME + "/fermata/" + code;
+                        Log.d(TAG, "LASTRING " + url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
                                 , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(), stopName, progressBar, waitingForTperResponse), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
-                        //do something
+
                         return true;
                     }
 
@@ -119,15 +118,17 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         return false;
                     }
                 }, getContext());
+
         for (int i = 0; i < mOverlay.size(); i++) {
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
+
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        scaleBarOverlay = new ScaleBarOverlay(mapView);
+        ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(mapView);
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 
-        MyLocationNewOverlay mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context),mapView);
+        MyLocationNewOverlay mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), mapView);
         mLocationOverlay.enableMyLocation();
         mapView.getOverlays().add(mLocationOverlay);
 

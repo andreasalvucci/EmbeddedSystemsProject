@@ -1,3 +1,5 @@
+@file:JvmName("AppPermissions")
+
 package com.example.cameraapp2.permissions
 
 import android.Manifest

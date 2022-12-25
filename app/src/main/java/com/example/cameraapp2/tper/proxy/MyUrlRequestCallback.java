@@ -1,4 +1,4 @@
-package com.example.cameraapp2;
+package com.example.cameraapp2.tper.proxy;
 
 import android.util.Log;
 import android.view.View;
@@ -7,19 +7,25 @@ import android.widget.TextView;
 
 import androidx.fragment.app.FragmentManager;
 
+import com.example.cameraapp2.BottomSheetDialog;
+
 import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.parser.ParseException;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyUrlRequestCallback extends UrlRequest.Callback {
+    /**
+     * URL of the proxy server.
+     */
+    public static final String HOSTNAME = "https://tper-backend.onrender.com";
+
     private static final String TAG = MyUrlRequestCallback.class.getSimpleName();
 
     private static final String NO_BUSES_RESPONSE_IDENTIFIER = "OGGI";

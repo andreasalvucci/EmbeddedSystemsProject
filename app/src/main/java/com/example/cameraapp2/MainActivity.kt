@@ -13,7 +13,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -24,7 +23,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.preference.PreferenceManager
 import com.example.cameraapp2.permissions.positionPermissions
 import com.example.cameraapp2.permissions.scanImagePermissions
+import com.example.cameraapp2.textrecognition.Recognizer
 import com.example.cameraapp2.tper.TperUtilities
+import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback
+import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback.HOSTNAME
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.common.util.concurrent.ListenableFuture
@@ -36,7 +38,6 @@ import com.lorenzofelletti.permissions.dispatcher.dsl.*
 import org.chromium.net.CronetEngine
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
-import java.io.ByteArrayOutputStream
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -51,9 +52,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imageCapture: ImageCapture
     private var progressBar: ProgressBar? = null
     private var scanByStopNameSwitch: SwitchMaterial? = null
-    private var toolbar: Toolbar? = null
     private lateinit var cronetEngine: CronetEngine
-    private var handler: Handler? = null
+    private val handler by lazy { Handler(Looper.getMainLooper()) }
     private lateinit var zoomInButton: MaterialButton
     private lateinit var zoomOutButton: MaterialButton
     private lateinit var torchButton: MaterialButton
@@ -80,7 +80,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     positiveButtonText = getString(R.string.proceed_string),
                     negativeButtonText = getString(R.string.dismiss_string)
                 )
-                doOnGranted {}
                 doOnDenied {
                     showPermissionsDeniedDialog(this@MainActivity)
                 }
@@ -97,8 +96,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         }
-
-        handler = Handler(Looper.getMainLooper())
 
         permissionManager checkRequestAndDispatch PERMISSION_REQUEST_CODE
 
@@ -124,8 +121,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         progressBar = findViewById(R.id.indeterminateBar)
         progressBar?.visibility = View.INVISIBLE
         scanByStopNameSwitch = findViewById(R.id.scan_by_stop_name)
-        toolbar = findViewById(R.id.toolbar)
-        toolbar?.visibility = View.VISIBLE
+
         scanByStopNameSwitch?.setOnCheckedChangeListener { _, scanByName ->
             if (scanByName) {
                 scanHereTextView.setText(R.string.scan_here_text_view_text_name)
@@ -245,7 +241,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     cropArea!!.visibility = View.INVISIBLE
                     runInference(croppedPhotoBitmap)
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e(TAG, e.stackTrace.toString())
                     Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
                 }
             }
@@ -263,29 +259,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         matrix.postRotate(image.imageInfo.rotationDegrees.toFloat())
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, image.width, image.height, matrix, false)
         return bitmap
-    }
-
-    private fun cropImage(bitmap: Bitmap, frame: View?, reference: View?): ByteArray {
-        val heightOriginal = frame!!.height
-        val widthOriginal = frame.width
-        val heightFrame = reference!!.height
-        val widthFrame = reference.width
-        val leftFrame = reference.left
-        val topFrame = reference.top
-        val heightReal = bitmap.height
-        val widthReal = bitmap.width
-        val widthFinal = widthFrame * widthReal / widthOriginal
-        val heightFinal = heightFrame * heightReal / heightOriginal
-        val leftFinal = leftFrame * widthReal / widthOriginal
-        val topFinal = topFrame * heightReal / heightOriginal
-        val bitmapFinal = Bitmap.createBitmap(
-            bitmap, leftFinal, topFinal, widthFinal, heightFinal
-        )
-        val stream = ByteArrayOutputStream()
-        bitmapFinal.compress(
-            Bitmap.CompressFormat.JPEG, 100, stream
-        ) //100 is the best quality possible
-        return stream.toByteArray()
     }
 
     fun runInference(image: Bitmap?) {
@@ -316,10 +289,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
                 if (busCodeScanning) {
                     val executor: Executor = Executors.newSingleThreadExecutor()
-                    val url = "$HOST/fermata/$stopName"
+                    val url = "$HOSTNAME/fermata/$stopName"
                     Log.d(TAG, "URL: $url")
                     val requestBuilder = cronetEngine.newUrlRequestBuilder(
-                        url, MyUrlRequestCallback(
+                        url,
+                        MyUrlRequestCallback(
                             supportFragmentManager,
                             tperUtilities.getBusStopByCode(Integer.valueOf(stopName)),
                             progressBar,
@@ -358,7 +332,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             1 -> {
                 val stopCode = busStopsCodes[0]
                 val executor: Executor = Executors.newSingleThreadExecutor()
-                val url = "$HOST/fermata/$stopCode"
+                val url = "$HOSTNAME/fermata/$stopCode"
                 Log.d(TAG, "URL $url")
                 val requestBuilder = cronetEngine.newUrlRequestBuilder(
                     url, MyUrlRequestCallback(
@@ -410,6 +384,5 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         private const val PERMISSION_REQUEST_CODE = 0
         private const val POSITION_REQUEST_CODE = 1
         private const val ZOOM_STEP = 0.1f
-        private const val HOST = "https://tper-backend.onrender.com"
     }
 }

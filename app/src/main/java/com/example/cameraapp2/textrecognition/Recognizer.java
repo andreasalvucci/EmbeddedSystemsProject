@@ -1,4 +1,4 @@
-package com.example.cameraapp2;
+package com.example.cameraapp2.textrecognition;
 
 import android.graphics.Bitmap;
 
