@@ -30,7 +30,9 @@
         il codice della fermata non esiste. Fai tap su Aiuto per scoprire come scansionare il codice della fermata</string>
     <string name="non_existent_dialog_title">Attenzione</string>
     <string name="non_existent_dialog_neg_btn">Aiuto</string>
-    <string name="non_existent_dialog_pos_btn">Ok</string>
+    <string name="ok_string">OK</string>
+    <string name="proceed_string">Procedi</string>
+    <string name="dismiss_string">Annulla</string>
     <string name="tutorial_toast_text">Aiuto premuto</string>
     <string name="bus_stop_not_recognized">Fermata non trovata</string>
     <string name="waiting_for_tper_response">In attesa della risposta da TPER</string>
@@ -39,4 +41,10 @@
     <string name="error_second_paragraph_text">Ciò può accadere se hai scansionato un codice che non esiste oppure se ci sono elementi che interferiscono con la corretta lettura del codice.</string>
     <string name="error_third_paragraph_text">Ti consigliamo di riprovare, puoi aiutarti con i comandi di zoom o con la torcia. Grazie.</string>
     <string name="error_riprova_text">Riprova</string>
+    <string name="permission_denied_dialog_title">Permessi Necessari</string>
+    <string name="permission_denied_dialog_message">Senza i permessi per camera, storage e internet questa applicazione non può funzionare. Puoi fornirli dalle impostazioni dell\'app.</string>
+    <string name="camera_rationale_dialog">I permessi di camera, storage e internet sono necessari per compiere riconoscimento del testo sull\'immagine della fermata. Non li useremo per nessun altro scopo</string>
+    <string name="position_rationale_dialog">Più risultati sono stati trovati per questa fermata. I permessi per la posizione sono necessari per permetterti di scelgliere la fermata a cui sei interessato</string>
+    <string name="position_permission_denied_dialog_title">Impossibilità a procedere</string>
+    <string name="position_permission_denied_dialog_message">Hai scelto di non concedere i permessi per la posizione, quindi non siamo in grado di fornirti quali sono i prossimi bus in arrivo per questa fermata.</string>
 </resources>

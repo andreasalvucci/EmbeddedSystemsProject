@@ -1,5 +1,7 @@
 package com.example.cameraapp2;
 
+import static com.example.cameraapp2.tper.proxy.MyUrlRequestCallback.HOSTNAME;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import com.example.cameraapp2.tper.TperUtilities;
+import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.net.CronetEngine;
@@ -27,6 +30,8 @@ import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,43 +39,36 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MapBottomSheetDialog extends BottomSheetDialogFragment {
+    private static final String TAG = MapBottomSheetDialog.class.getSimpleName();
 
     CronetEngine cronetEngine;
     Context context;
-    private MapView mapView;
-    private List<GeoPoint> punti;
-    private List<Integer> codes;
-    private TperUtilities tper;
-    private ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
-    private ScaleBarOverlay scaleBarOverlay;
+    private final List<GeoPoint> punti;
+
+    private final TperUtilities tper;
+    private final ArrayList<OverlayItem> items = new ArrayList<>();
     private TextView waitingForTperResponse;
     Drawable busStopMarker;
     private ProgressBar progressBar;
-    private final String SERVER_HOSTNAME = "https://tper-backend.onrender.com";
 
-
-    public MapBottomSheetDialog(Context context,List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper){
+    public MapBottomSheetDialog(Context context, List<GeoPoint> coordinate, List<Integer> codici, TperUtilities tper) {
         this.context = context;
         this.punti = coordinate;
-        this.codes = codici;
         this.tper = tper;
-
 
         CronetEngine.Builder myBuilder = new CronetEngine.Builder(context);
         cronetEngine = myBuilder.build();
 
-
-        int i = 0;
-        for (i = 0; i<coordinate.size();i++){
-            int codice= codici.get(i);
+        for (int i = 0; i < coordinate.size(); i++) {
+            int codice = codici.get(i);
             GeoPoint punto = coordinate.get(i);
-            items.add(new OverlayItem(String.valueOf(codice), "Description",punto));
+            items.add(new OverlayItem(String.valueOf(codice), "Description", punto));
         }
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable
-            ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
+            ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.map_bottom_sheet_layout,
                 container, false);
         busStopMarker = getResources().getDrawable(R.drawable.bus_stop);
@@ -81,7 +79,7 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
         progressBar = v.findViewById(R.id.progressBar);
         progressBar.setIndeterminate(true);
         progressBar.setVisibility(View.INVISIBLE);
-        mapView = v.findViewById(R.id.map);
+        MapView mapView = v.findViewById(R.id.map);
         mapView.setUseDataConnection(true);
 
 
@@ -101,17 +99,17 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         waitingForTperResponse.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.VISIBLE);
 
-                        int code = Integer.valueOf(item.getTitle());
+                        int code = Integer.parseInt(item.getTitle());
                         String stopName = tper.getBusStopByCode(code);
                         item.setMarker(busStopMarker);
                         Executor executor = Executors.newSingleThreadExecutor();
-                        String url = SERVER_HOSTNAME+"/fermata/"+code;
-                        Log.d("LASTRING",url);
+                        String url = HOSTNAME + "/fermata/" + code;
+                        Log.d(TAG, "LASTRING " + url);
                         UrlRequest.Builder requestBuilder = cronetEngine.newUrlRequestBuilder(url
-                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(),stopName,progressBar, waitingForTperResponse), executor);
+                                , new MyUrlRequestCallback(getActivity().getSupportFragmentManager(), stopName, progressBar, waitingForTperResponse), executor);
                         UrlRequest request = requestBuilder.build();
                         request.start();
-                        //do something
+
                         return true;
                     }
 
@@ -120,16 +118,21 @@ public class MapBottomSheetDialog extends BottomSheetDialogFragment {
                         return false;
                     }
                 }, getContext());
-        for(int i=0;i<mOverlay.size();i++){
+
+        for (int i = 0; i < mOverlay.size(); i++) {
             mOverlay.getItem(i).setMarker(busStopMarker);
         }
+
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        scaleBarOverlay = new ScaleBarOverlay(mapView);
+        ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(mapView);
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10);
         mapView.getOverlays().add(scaleBarOverlay);
 
-        mapView.getOverlays().add(mOverlay);
+        MyLocationNewOverlay mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), mapView);
+        mLocationOverlay.enableMyLocation();
+        mapView.getOverlays().add(mLocationOverlay);
 
+        mapView.getOverlays().add(mOverlay);
 
         return v;
     }
