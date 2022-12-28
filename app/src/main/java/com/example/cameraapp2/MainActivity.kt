@@ -24,6 +24,8 @@ import androidx.preference.PreferenceManager
 import com.example.cameraapp2.permissions.positionPermissions
 import com.example.cameraapp2.permissions.scanImagePermissions
 import com.example.cameraapp2.textrecognition.Recognizer
+import com.example.cameraapp2.tflite_ocr.ModelExecutionResult
+import com.example.cameraapp2.tflite_ocr.OCRModelExecutor
 import com.example.cameraapp2.tper.TperUtilities
 import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback
 import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback.HOSTNAME
@@ -35,6 +37,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.lorenzofelletti.permissions.PermissionManager
 import com.lorenzofelletti.permissions.dispatcher.dsl.*
+import kotlinx.coroutines.asCoroutineDispatcher
 import org.chromium.net.CronetEngine
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
@@ -58,6 +61,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var zoomOutButton: MaterialButton
     private lateinit var torchButton: MaterialButton
     private lateinit var helpButton: MaterialButton
+
+    private val inferenceThread = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
     private val permissionManager by lazy { PermissionManager(this) }
 
@@ -235,13 +240,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     image.close()
                     progressBar!!.visibility = View.VISIBLE
                     cropArea!!.visibility = View.INVISIBLE
-                    runInference(croppedPhotoBitmap)
+                    tfLiteInference(croppedPhotoBitmap)
+                    //runInference(croppedPhotoBitmap)
                 } catch (e: Exception) {
                     Log.e(TAG, e.stackTrace.toString())
                     Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
                 }
             }
         })
+    }
+
+    private fun tfLiteInference(image: Bitmap){
+
+        val myExecutor = OCRModelExecutor(this)
+
+        val result = myExecutor.execute(image)
+        Log.d("TESTO", result.executionLog)
+        result.executionLog
+
     }
 
     private fun convertImageProxyToBitmap(image: ImageProxy): Bitmap {
