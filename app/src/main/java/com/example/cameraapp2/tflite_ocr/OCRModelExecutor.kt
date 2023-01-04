@@ -34,8 +34,10 @@ import org.opencv.imgproc.Imgproc.warpPerspective
 import org.opencv.utils.Converters.vector_RotatedRect_to_Mat
 import org.opencv.utils.Converters.vector_float_to_Mat
 import org.tensorflow.lite.Interpreter
+import kotlin.math.cos
+import kotlin.math.sin
 
-class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : AutoCloseable {
+class OCRModelExecutor(context: Context, useGPU: Boolean = false) : AutoCloseable {
     private var gpuDelegate: GpuDelegate? = null
 
     private val recognitionResult: ByteBuffer
@@ -65,7 +67,7 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
         recognitionResult.order(ByteOrder.nativeOrder())
         indicesMat = MatOfInt()
         boundingBoxesMat = MatOfRotatedRect()
-        ocrResults = HashMap<String, Int>()
+        ocrResults = HashMap()
     }
 
     fun execute(data: Bitmap): ModelExecutionResult {
@@ -84,7 +86,7 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
             Log.d(TAG, exceptionLog)
 
             val emptyBitmap = ImageUtils.createEmptyBitmap(displayImageSize, displayImageSize)
-            return ModelExecutionResult(emptyBitmap, exceptionLog, HashMap<String, Int>())
+            return ModelExecutionResult(emptyBitmap, exceptionLog, HashMap())
         }
     }
 
@@ -99,14 +101,14 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
             )
 
         val detectionInputs = arrayOf(detectionTensorImage.buffer.rewind())
-        val detectionOutputs: HashMap<Int, Any> = HashMap<Int, Any>()
+        val detectionOutputs: HashMap<Int, Any> = HashMap()
 
         val detectionScores =
             Array(1) { Array(detectionOutputNumRows) { Array(detectionOutputNumCols) { FloatArray(1) } } }
         val detectionGeometries =
             Array(1) { Array(detectionOutputNumRows) { Array(detectionOutputNumCols) { FloatArray(5) } } }
-        detectionOutputs.put(0, detectionScores)
-        detectionOutputs.put(1, detectionGeometries)
+        detectionOutputs[0] = detectionScores
+        detectionOutputs[1] = detectionGeometries
 
         detectionInterpreter.runForMultipleInputsOutputs(detectionInputs, detectionOutputs)
 
@@ -152,8 +154,8 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
                 val w = detectionGeometryX1Data[x] + detectionGeometryX3Data[x]
 
                 val angle = detectionRotationAngleData[x]
-                val cos = Math.cos(angle.toDouble())
-                val sin = Math.sin(angle.toDouble())
+                val cos = cos(angle.toDouble())
+                val sin = sin(angle.toDouble())
 
                 val offset =
                     Point(
@@ -197,7 +199,7 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
         val paint = Paint()
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 10.toFloat()
-        paint.setColor(Color.GREEN)
+        paint.color = Color.GREEN
 
         for (i in indicesMat.toArray()) {
             val boundingBox = boundingBoxesMat.toArray()[i]
@@ -276,13 +278,13 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
 
             var recognizedText = ""
             for (k in 0 until recognitionModelOutputSize) {
-                var alphabetIndex = recognitionResult.getInt(k * 8)
-                if (alphabetIndex in 0..alphabets.length - 1)
-                    recognizedText = recognizedText + alphabets[alphabetIndex]
+                val alphabetIndex = recognitionResult.getInt(k * 8)
+                if (alphabetIndex in alphabets.indices)
+                    recognizedText += alphabets[alphabetIndex]
             }
             Log.d("Recognition result:", recognizedText)
             if (recognizedText != "") {
-                ocrResults.put(recognizedText, getRandomColor())
+                ocrResults[recognizedText] = getRandomColor()
             }
         }
         return bitmapWithBoundingBoxes
@@ -308,7 +310,7 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
         useGpu: Boolean = false
     ): Interpreter {
         val tfliteOptions = Interpreter.Options()
-        tfliteOptions.setNumThreads(numberThreads)
+        tfliteOptions.numThreads = numberThreads
 
         gpuDelegate = null
         if (useGpu) {
@@ -327,7 +329,7 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
         }
     }
 
-    fun getRandomColor(): Int {
+    private fun getRandomColor(): Int {
         val random = Random()
         return Color.argb(
             (128),
@@ -338,7 +340,7 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
     }
 
     companion object {
-        public const val TAG = "TfLiteOCRDemo"
+        const val TAG = "TfLiteOCRDemo"
         private const val textDetectionModel = "east.tflite"
         private const val textRecognitionModel = "keras.tflite"
         private const val numberThreads = 4
@@ -349,10 +351,10 @@ class OCRModelExecutor(context: Context, private var useGPU: Boolean = false) : 
         private val detectionImageMeans =
             floatArrayOf(103.94.toFloat(), 116.78.toFloat(), 123.68.toFloat())
         private val detectionImageStds = floatArrayOf(1.toFloat(), 1.toFloat(), 1.toFloat())
-        private val detectionOutputNumRows = 80
-        private val detectionOutputNumCols = 80
-        private val detectionConfidenceThreshold = 0.5
-        private val detectionNMSThreshold = 0.4
+        private const val detectionOutputNumRows = 80
+        private const val detectionOutputNumCols = 80
+        private const val detectionConfidenceThreshold = 0.5
+        private const val detectionNMSThreshold = 0.4
         private const val recognitionImageHeight = 31
         private const val recognitionImageWidth = 200
         private const val recognitionImageMean = 0.toFloat()
