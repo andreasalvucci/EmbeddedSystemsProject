@@ -145,7 +145,8 @@ class TperUtilities(context: Context) {
     companion object {
         private val TAG = TperUtilities::class.java.simpleName
 
-        /** Levenshtein Max Distance Ratio */
+        /** Levenshtein Max Distance Ratio, i.e. the max ratio between the Levenshtein distance and
+         * the length of the target string. */
         private const val LEVENSHTEIN_MAX_DISTANCE_RATIO = 0.6
 
         /**

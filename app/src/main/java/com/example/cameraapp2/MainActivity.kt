@@ -45,23 +45,24 @@ import java.util.concurrent.Executors
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var waitingForTperTextView: TextView
     private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
-    private var cropArea: View? = null
+    private lateinit var cropArea: View
     private lateinit var scanHereTextView: TextView
     private lateinit var pictureBtn: Button
     private lateinit var previewView: PreviewView
     private lateinit var imageCapture: ImageCapture
-    private var progressBar: ProgressBar? = null
-    private var scanByStopNameSwitch: SwitchMaterial? = null
+    private lateinit var progressBar: ProgressBar
+    private lateinit var scanByStopNameSwitch: SwitchMaterial
     private lateinit var cronetEngine: CronetEngine
     private val handler by lazy { Handler(Looper.getMainLooper()) }
     private lateinit var zoomInButton: MaterialButton
     private lateinit var zoomOutButton: MaterialButton
     private lateinit var torchButton: MaterialButton
     private lateinit var helpButton: MaterialButton
+    private var cameraControl: CameraControl? = null
 
     private val permissionManager by lazy { PermissionManager(this) }
 
-    private var torchIsOn = false
+    private var isTorchOn = false
 
     private val executor
         get() = ContextCompat.getMainExecutor(this)
@@ -119,10 +120,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         scanHereTextView.visibility = View.VISIBLE
         pictureBtn = findViewById(R.id.image_capture_button)
         progressBar = findViewById(R.id.indeterminateBar)
-        progressBar?.visibility = View.INVISIBLE
+        progressBar.visibility = View.INVISIBLE
         scanByStopNameSwitch = findViewById(R.id.scan_by_stop_name)
 
-        scanByStopNameSwitch?.setOnCheckedChangeListener { _, scanByName ->
+        scanByStopNameSwitch.setOnCheckedChangeListener { _, scanByName ->
             if (scanByName) {
                 scanHereTextView.setText(R.string.scan_here_text_view_text_name)
             } else {
@@ -160,12 +161,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             UseCaseGroup.Builder().addUseCase(preview).addUseCase(imageCapture).build()
         val camera =
             cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, useCaseGroup)
-        val cameraControl = camera.cameraControl
+        cameraControl = camera.cameraControl
         previewView.setOnTouchListener { _: View?, motionEvent: MotionEvent ->
             val factory = previewView.meteringPointFactory
             val point = factory.createPoint(motionEvent.x, motionEvent.y)
             val action = FocusMeteringAction.Builder(point).build()
-            cameraControl.startFocusAndMetering(action)
+            cameraControl?.startFocusAndMetering(action)
             false
         }
         zoomInButton.setOnClickListener {
@@ -175,7 +176,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     applicationContext, R.string.maximum_level_of_zoom_reached, Toast.LENGTH_SHORT
                 ).show()
             } else {
-                cameraControl.setLinearZoom(linearZoom + ZOOM_STEP)
+                cameraControl?.setLinearZoom(linearZoom + ZOOM_STEP)
             }
         }
         zoomOutButton.setOnClickListener {
@@ -185,20 +186,35 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     applicationContext, R.string.minimum_level_of_zoom_reached, Toast.LENGTH_SHORT
                 ).show()
             } else {
-                cameraControl.setLinearZoom(linearZoom - ZOOM_STEP)
+                cameraControl?.setLinearZoom(linearZoom - ZOOM_STEP)
             }
         }
-        torchButton.setOnClickListener { switchTorchState(cameraControl) }
+        torchButton.setOnClickListener { switchTorchState() }
     }
 
-    private fun switchTorchState(cameraControl: CameraControl) {
-        cameraControl.enableTorch(!torchIsOn)
-        torchIsOn = !torchIsOn
+    /**
+     * Sets the torch state to off.
+     */
+    private fun forceTorchOff() {
+        if (isTorchOn) {
+            switchTorchState()
+        }
+    }
+
+    /**
+     * Switches the torch state.
+     */
+    private fun switchTorchState() {
+        cameraControl?.enableTorch(!isTorchOn)
+        isTorchOn = !isTorchOn
         switchTorchIcon()
     }
 
+    /**
+     * Switches the torch icon using the current torch state.
+     */
     private fun switchTorchIcon() {
-        torchButton.icon = if (torchIsOn) {
+        torchButton.icon = if (isTorchOn) {
             ContextCompat.getDrawable(this, R.drawable.ic_baseline_flashlight_off_24)
         } else {
             ContextCompat.getDrawable(this, R.drawable.ic_baseline_flashlight_on_24)
@@ -218,6 +234,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    private fun makeProgressBarVisibleAndCropAreaInvisible() {
+        runOnUiThread {
+            progressBar.visibility = View.VISIBLE
+            cropArea.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun makeProgressBarInvisibleAndCropAreaVisible() {
+        runOnUiThread {
+            progressBar.visibility = View.INVISIBLE
+            cropArea.visibility = View.VISIBLE
+        }
+    }
+
     private fun capturePhoto() {
         permissionManager checkRequestAndDispatch PERMISSION_REQUEST_CODE
 
@@ -232,13 +262,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     val croppedPhoto = cropImage(bitmapImage, previewView, cropArea)
                     val croppedPhotoBitmap =
                         BitmapFactory.decodeByteArray(croppedPhoto, 0, croppedPhoto.size)
-                    image.close()
-                    progressBar!!.visibility = View.VISIBLE
-                    cropArea!!.visibility = View.INVISIBLE
+
+                    forceTorchOff() // turn off the torch if it is on
+                    makeProgressBarVisibleAndCropAreaInvisible()
                     runInference(croppedPhotoBitmap)
                 } catch (e: Exception) {
-                    Log.e(TAG, e.stackTrace.toString())
-                    Toast.makeText(applicationContext, e.localizedMessage, Toast.LENGTH_LONG).show()
+                    Log.e(TAG, e.stackTrace.contentDeepToString())
+                    makeProgressBarInvisibleAndCropAreaVisible()
+                } finally {
+                    image.close()
                 }
             }
         })
@@ -257,87 +289,82 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         return bitmap
     }
 
+    private fun executeRequestWithStopCode(stopCode: String) {
+        val executor: Executor = Executors.newSingleThreadExecutor()
+        val url = "$HOSTNAME/fermata/$stopCode"
+        Log.d(TAG, "URL: $url")
+        val requestBuilder = cronetEngine.newUrlRequestBuilder(
+            url, MyUrlRequestCallback(
+                supportFragmentManager,
+                tperUtilities.getBusStopByCode(Integer.valueOf(stopCode)),
+                progressBar,
+                waitingForTperTextView
+            ), executor
+        )
+        val request = requestBuilder.build()
+        request.start()
+    }
+
+    private fun busStopRecognitionUnsuccessful() {
+        Log.d(TAG, "Recognition Unsuccessful")
+        if (!isFinishing) showBusStopNotExistingDialog()
+        makeProgressBarInvisibleAndCropAreaVisible()
+    }
+
+    private fun showRecognizedStopInToast(stop: String) {
+        Toast.makeText(
+            applicationContext, stop, Toast.LENGTH_SHORT
+        ).show()
+    }
+
     fun runInference(image: Bitmap?) {
-        val busCodeScanning = !scanByStopNameSwitch!!.isChecked
+        val busCodeScanning = !scanByStopNameSwitch.isChecked
+
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         InputImage.fromBitmap(image!!, 0)
+
         val recognizer = Recognizer(image)
-        recognizer.getStopNumber { stopName ->
-            /* We check whether the numerical code of the bus stop exists. If it doesn't, we cannot go further
-             * and we notify the user. */
-            if (busCodeScanning && !tperUtilities.codeIsBusStop(stopName)) {
-                Log.d(TAG, "NUMBER: Non existent number")
-                progressBar!!.visibility = View.INVISIBLE
-                cropArea!!.visibility = View.VISIBLE
-                if (!isFinishing) showBusStopNotExistingDialog()
-            } else {
-                Log.wtf("message", "recognized word: $stopName")
-                Log.d(TAG, "NUMBER: $stopName")
-                val busStopName = tperUtilities.getMoreSimilarBusStop(stopName)
-                Log.d(TAG, "bus Stop: $busStopName")
-                progressBar!!.visibility = View.INVISIBLE
-                val toastText = busStopName.ifEmpty { getString(R.string.bus_stop_not_recognized) }
-                Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT).show()
-                cropArea!!.visibility = View.VISIBLE
+        recognizer.getStopNumber { recognized ->
+            Log.d(TAG, "runInference: $recognized")
 
-                makeCropAreaGreenFor()
+            when {
+                busCodeScanning && !tperUtilities.codeIsBusStop(recognized) -> busStopRecognitionUnsuccessful()
 
-                if (busCodeScanning) {
-                    val executor: Executor = Executors.newSingleThreadExecutor()
-                    val url = "$HOSTNAME/fermata/$stopName"
-                    Log.d(TAG, "URL: $url")
-                    val requestBuilder = cronetEngine.newUrlRequestBuilder(
-                        url, MyUrlRequestCallback(
-                            supportFragmentManager,
-                            tperUtilities.getBusStopByCode(Integer.valueOf(stopName)),
-                            progressBar,
-                            waitingForTperTextView
-                        ), executor
-                    )
-                    val request = requestBuilder.build()
-                    request.start()
-                } else {
-                    val busStopsCoordinates =
-                        tperUtilities.getCoupleOfCoordinatesByStopName(stopName)
-                    val busStopsCodes = tperUtilities.getCodesByStopName(
-                        tperUtilities.getMoreSimilarBusStop(
-                            stopName
-                        )
-                    )
+                busCodeScanning -> {
+                    showRecognizedStopInToast(recognized)
+                    makeCropAreaGreenFor()
+                    executeRequestWithStopCode(recognized)
+                }
 
-                    /* se esiste una sola fermata che si chiama così, allora è inutile far scegliere all'utente un
-                     * marcatore sulla mappa, facciamo partire subito la richiesta */
-                    dispatchInferenceResults(busStopsCodes, busStopsCoordinates)
+                else -> { // scan by stop name
+                    val recognizedStopName = tperUtilities.getMoreSimilarBusStop(recognized)
+
+                    if (recognizedStopName.isNotEmpty()) {
+                        showRecognizedStopInToast(recognizedStopName)
+                        makeCropAreaGreenFor()
+
+                        val busStopsCoordinates =
+                            tperUtilities.getCoupleOfCoordinatesByStopName(recognized)
+                        val busStopsCodes = tperUtilities.getCodesByStopName(recognizedStopName)
+                        dispatchStopsCodesResults(busStopsCodes, busStopsCoordinates)
+                        makeProgressBarInvisibleAndCropAreaVisible()
+                    } else {
+                        busStopRecognitionUnsuccessful()
+                    }
                 }
             }
         }
     }
 
-    private fun dispatchInferenceResults(
+    private fun dispatchStopsCodesResults(
         busStopsCodes: List<Int>, busStopsCoordinates: List<GeoPoint>
     ) {
         when (busStopsCodes.size) {
-            0 -> {
-                Log.d(TAG, "NUMBER: Non existent number")
-                progressBar!!.visibility = View.INVISIBLE
-                cropArea!!.visibility = View.VISIBLE
-                if (!isFinishing) showBusStopNotExistingDialog()
-            }
             1 -> {
-                val stopCode = busStopsCodes[0]
-                val executor: Executor = Executors.newSingleThreadExecutor()
-                val url = "$HOSTNAME/fermata/$stopCode"
-                Log.d(TAG, "URL $url")
-                val request = cronetEngine.newUrlRequestBuilder(
-                    url, MyUrlRequestCallback(
-                        supportFragmentManager,
-                        tperUtilities.getBusStopByCode(stopCode),
-                        progressBar,
-                        waitingForTperTextView
-                    ), executor
-                ).build()
-                request.start()
+                val stopCode = busStopsCodes[0].toString()
+                executeRequestWithStopCode(stopCode)
             }
+
             else -> {
                 // replaces the onGranted action for the location permission to show the map
                 // with the correct markers (if the permissions are granted)
@@ -356,12 +383,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    /**
+     * Makes the crop area green for [durationInMillis] milliseconds. If the crop area is not visible
+     * it will be made visible.
+     *
+     * @param durationInMillis the duration in milliseconds for which the crop area will be green
+     */
     private fun makeCropAreaGreenFor(durationInMillis: Long = 3000) {
-        cropArea!!.background = ResourcesCompat.getDrawable(
+        cropArea.visibility = View.VISIBLE
+        cropArea.background = ResourcesCompat.getDrawable(
             resources, R.drawable.rectangle_round_corners_green, null
         )
         handler.postDelayed({
-            cropArea!!.background = ResourcesCompat.getDrawable(
+            cropArea.background = ResourcesCompat.getDrawable(
                 resources, R.drawable.rectangle_round_corners_red, null
             )
         }, durationInMillis)
