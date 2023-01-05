@@ -67,16 +67,6 @@ class TperUtilities(context: Context) {
         return points
     }
 
-    fun codeIsBusStop(busStopCodeString: String): Boolean {
-        try {
-            val code = busStopCodeString.toInt()
-            return busStopDictionary.containsKey(code)
-        } catch (e: NumberFormatException) {
-            Log.e(TAG, "EXCEPTION: $e")
-        }
-        return false
-    }
-
     fun getMostSimilarStopCode(aPossibleBusCode: String): String {
         val processedCode: String =
             NumbersInferencePostProcessing.substitutionStep(aPossibleBusCode)
@@ -196,6 +186,8 @@ class TperUtilities(context: Context) {
         private fun findClosestMatch(
             collection: Collection<String>, toSearch: String, maxDistance: Int
         ): String? {
+            if (toSearch.isEmpty() or collection.isEmpty()) return null
+
             var currMinDistance = Int.MAX_VALUE
             var closest: String? = null
             for (compareObject in collection) {

@@ -52,22 +52,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imageCapture: ImageCapture
     private lateinit var progressBar: ProgressBar
     private lateinit var scanByStopNameSwitch: SwitchMaterial
-    private lateinit var cronetEngine: CronetEngine
-    private val handler by lazy { Handler(Looper.getMainLooper()) }
     private lateinit var zoomInButton: MaterialButton
     private lateinit var zoomOutButton: MaterialButton
     private lateinit var torchButton: MaterialButton
     private lateinit var helpButton: MaterialButton
+
     private var cameraControl: CameraControl? = null
-
-    private val permissionManager by lazy { PermissionManager(this) }
-
     private var isTorchOn = false
+
+    private lateinit var cronetEngine: CronetEngine
+    private val handler by lazy { Handler(Looper.getMainLooper()) }
 
     private val executor
         get() = ContextCompat.getMainExecutor(this)
 
     private val tperUtilities by lazy { TperUtilities(this) }
+    private val permissionManager by lazy { PermissionManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

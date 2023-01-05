@@ -30,7 +30,6 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
 
     private static final String NO_BUSES_RESPONSE_IDENTIFIER = "OGGI";
 
-    public String responseBody;
     private final FragmentManager supportFragmentManager;
     private final String stopName;
     private final ProgressBar progressBar;
@@ -66,7 +65,6 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     @Override
     public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws JSONException {
         Log.i(TAG, "onReadCompleted method called.");
-        // You should keep reading the request until there's no more data.
 
         byteBuffer.clear();
         request.read(byteBuffer);
@@ -82,18 +80,16 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
 
         //Properly format the response String
         responseBodyString = responseBodyString.trim().replaceAll("(\r\n|\n\r|\r|\n|\r0|\n0)", "");
-        Log.d(TAG, "RESPONSEBODYSTRING: " + responseBodyString);
+        Log.d(TAG, "RESPONSE BODY STRING: " + responseBodyString);
         if (responseBodyString.endsWith("0")) {
             responseBodyString = responseBodyString.substring(0, responseBodyString.length() - 1);
         }
-
-        this.responseBody = responseBodyString;
 
         JSONObject results = new JSONObject();
         try {
             results.put("body", responseBodyString);
         } catch (JSONException e) {
-            Log.e(TAG, "JSONEXCEPTION eccezione");
+            Log.e(TAG, "JSON EXCEPTION exception");
             e.printStackTrace();
         }
 
@@ -114,8 +110,8 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     }
 
     private List<List<String>> getMapFromJson(String jsonString) throws JSONException {
-        List<List<String>> lista = new ArrayList<>();
-        Log.i("JSONinviato", jsonString);
+        List<List<String>> lists = new ArrayList<>();
+        Log.i("JSON sent", jsonString);
         JSONObject json = new JSONObject(jsonString);
         JSONObject message = json.getJSONObject("message");
         JSONArray buses = message.getJSONArray("Autobus");
@@ -130,9 +126,9 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
             List<String> lineAndTime = new ArrayList<>();
             lineAndTime.add(line);
             lineAndTime.add(time);
-            lista.add(lineAndTime);
+            lists.add(lineAndTime);
         }
 
-        return lista;
+        return lists;
     }
 }
