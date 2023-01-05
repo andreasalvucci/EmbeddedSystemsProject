@@ -328,12 +328,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             Log.d(TAG, "runInference: $recognized")
 
             when {
-                busCodeScanning && !tperUtilities.codeIsBusStop(recognized) -> busStopRecognitionUnsuccessful()
-
                 busCodeScanning -> {
-                    showRecognizedStopInToast(recognized)
-                    makeCropAreaGreenFor()
-                    executeRequestWithStopCode(recognized)
+                    val stopCode = tperUtilities.getMostSimilarStopCode(recognized)
+                    if (stopCode.isEmpty()) {
+                        busStopRecognitionUnsuccessful()
+                    } else {
+                        showRecognizedStopInToast(stopCode)
+                        makeCropAreaGreenFor()
+                        executeRequestWithStopCode(stopCode)
+                    }
                 }
 
                 else -> { // scan by stop name

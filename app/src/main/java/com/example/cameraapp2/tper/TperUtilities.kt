@@ -8,7 +8,7 @@ import org.osmdroid.util.GeoPoint
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import kotlin.math.ceil
+import kotlin.math.floor
 
 /**
  * Utility class for TPER data.
@@ -77,6 +77,16 @@ class TperUtilities(context: Context) {
         return false
     }
 
+    fun getMostSimilarStopCode(aPossibleBusCode: String): String {
+        val processedCode: String =
+            NumbersInferencePostProcessing.substitutionStep(aPossibleBusCode)
+        return Companion.findClosestMatch(
+            busStopDictionary.keys.map { it.toString() },
+            processedCode,
+            LEVENSHTEIN_MAX_DISTANCE_FOR_STOP_CODE_SEARCH
+        ) ?: ""
+    }
+
     fun getCodesByStopName(stopName: String): List<Int> {
         Log.d(
             TAG, "getCodesByStopName - Received:$stopName"
@@ -104,7 +114,11 @@ class TperUtilities(context: Context) {
      * @return the most similar bus stop name, or null if no similar bus stop is found
      */
     private fun findClosestMatch(aPossibleBusStop: String): String? {
-        return Companion.findClosestMatch(busStopDictionary.values, aPossibleBusStop.uppercase())
+        return Companion.findClosestMatch(
+            busStopDictionary.values,
+            aPossibleBusStop.uppercase(),
+            maxLevenshteinDistanceFromTarget(aPossibleBusStop)
+        )
     }
 
     /**
@@ -145,9 +159,17 @@ class TperUtilities(context: Context) {
     companion object {
         private val TAG = TperUtilities::class.java.simpleName
 
-        /** Levenshtein Max Distance Ratio, i.e. the max ratio between the Levenshtein distance and
-         * the length of the target string. */
+        /**
+         * Levenshtein Max Distance Ratio, i.e. the max ratio between the Levenshtein distance and
+         * the length of the target string.
+         */
         private const val LEVENSHTEIN_MAX_DISTANCE_RATIO = 0.6
+
+        /**
+         * Maximum Levenshtein distance for a possible stop code from an actual stop code to be
+         * considered a match.
+         */
+        private const val LEVENSHTEIN_MAX_DISTANCE_FOR_STOP_CODE_SEARCH = 1
 
         /**
          * Returns the maximum Levenshtein from [target] allowed for a string to be considered a
@@ -157,7 +179,7 @@ class TperUtilities(context: Context) {
          * @return The maximum Levenshtein distance from [target].
          */
         private fun maxLevenshteinDistanceFromTarget(target: String): Int {
-            return ceil(target.length * LEVENSHTEIN_MAX_DISTANCE_RATIO).toInt()
+            return floor(target.length * LEVENSHTEIN_MAX_DISTANCE_RATIO).toInt()
         }
 
         /**
@@ -171,7 +193,9 @@ class TperUtilities(context: Context) {
          * @return The closest match, i.e the string in [collection] that is the closest to
          * [toSearch], or null if no match is found.
          */
-        private fun findClosestMatch(collection: Collection<String>, toSearch: String): String? {
+        private fun findClosestMatch(
+            collection: Collection<String>, toSearch: String, maxDistance: Int
+        ): String? {
             var currMinDistance = Int.MAX_VALUE
             var closest: String? = null
             for (compareObject in collection) {
@@ -182,7 +206,6 @@ class TperUtilities(context: Context) {
                     closest = compareObject
                 }
             }
-            val maxDistance = maxLevenshteinDistanceFromTarget(toSearch)
             Log.i(TAG, "Min distance found: $currMinDistance; max allowed: $maxDistance")
 
             if (currMinDistance > maxDistance) closest = null
