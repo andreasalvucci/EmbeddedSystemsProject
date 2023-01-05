@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.Size
+import android.util.TimingLogger
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
@@ -23,6 +24,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.preference.PreferenceManager
 import com.example.cameraapp2.permissions.positionPermissions
 import com.example.cameraapp2.permissions.scanImagePermissions
+import com.example.cameraapp2.tflite_ocr.ModelExecutionResult
 import com.example.cameraapp2.tflite_ocr.OCRModelExecutor
 import com.example.cameraapp2.tper.TperUtilities
 import com.example.cameraapp2.tper.proxy.MyUrlRequestCallback
@@ -38,6 +40,7 @@ import org.osmdroid.util.GeoPoint
 import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var waitingForTperTextView: TextView
@@ -274,8 +277,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun tfLiteInference(image: Bitmap) {
         val myExecutor = OCRModelExecutor(this)
-
-        val result = myExecutor.execute(image)
+        var resultx: ModelExecutionResult?
+        measureTimeMillis {
+            resultx = myExecutor.execute(image)
+        }.also {
+            Log.d(TAG, "Inference time: $it ms")
+        }
+        val result = resultx as ModelExecutionResult
         Log.d(TAG, "TEXT ${result.executionLog}")
         result.executionLog
         result.itemsFound.forEach {
