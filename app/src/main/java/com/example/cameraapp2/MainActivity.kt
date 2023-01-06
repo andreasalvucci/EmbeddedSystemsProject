@@ -44,7 +44,7 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var waitingForTperTextView: TextView
-    private var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>? = null
+    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var cropArea: View
     private lateinit var scanHereTextView: TextView
     private lateinit var pictureBtn: Button
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var cameraControl: CameraControl? = null
     private var isTorchOn = false
 
-    private lateinit var cronetEngine: CronetEngine
+    private val cronetEngine by lazy { CronetEngine.Builder(this@MainActivity).build() }
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
     private val executor
@@ -109,7 +109,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         waitingForTperTextView = findViewById(R.id.waiting_for_tper_response_main)
         waitingForTperTextView.visibility = View.INVISIBLE
 
-        cronetEngine = CronetEngine.Builder(this@MainActivity).build()
         zoomInButton = findViewById(R.id.zoomInbutton)
         zoomOutButton = findViewById(R.id.zoomOutButton)
         torchButton = findViewById(R.id.torchButton)
@@ -132,9 +131,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
         pictureBtn.setOnClickListener(this)
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture!!.addListener({
+        cameraProviderFuture.addListener({
             try {
-                val cameraProvider = cameraProviderFuture!!.get()
+                val cameraProvider = cameraProviderFuture.get()
                 startCamera(cameraProvider)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -373,7 +372,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 // with the correct markers (if the permissions are granted)
                 permissionManager.dispatcher.replaceEntryOnGranted(POSITION_REQUEST_CODE) {
                     val mapBottomSheetDialog = MapBottomSheetDialog(
-                        applicationContext, busStopsCoordinates, busStopsCodes, tperUtilities
+                        baseContext, busStopsCoordinates, busStopsCodes, tperUtilities
                     )
                     mapBottomSheetDialog.show(
                         supportFragmentManager, "ModalBottomSheet"
