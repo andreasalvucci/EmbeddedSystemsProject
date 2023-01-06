@@ -26,9 +26,9 @@ public class Recognizer {
             StringBuilder wordToExamineBuilder = new StringBuilder();
 
             for (String word : allWords) {
-                wordToExamineBuilder.append(word);
+                wordToExamineBuilder.append(word).append(" ");
             }
-            String wordToExamine = wordToExamineBuilder.toString();
+            String wordToExamine = wordToExamineBuilder.toString().trim();
 
             myCallback.onCallBack(wordToExamine);
         }).addOnFailureListener(e -> {
