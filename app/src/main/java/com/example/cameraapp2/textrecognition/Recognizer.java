@@ -1,6 +1,7 @@
 package com.example.cameraapp2.textrecognition;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Recognizer {
+    private static final String TAG = Recognizer.class.getSimpleName();
     private final TextRecognizer textRecognizer;
     private final InputImage inputImage;
 
@@ -21,6 +23,8 @@ public class Recognizer {
     }
 
     public void getStopNumber(RecognizerCallback myCallback) {
+        long startTime = System.nanoTime();
+
         textRecognizer.process(inputImage).addOnSuccessListener(text -> {
             List<String> allWords = getWordsFromText(text);
             StringBuilder wordToExamineBuilder = new StringBuilder();
@@ -29,6 +33,9 @@ public class Recognizer {
                 wordToExamineBuilder.append(word);
             }
             String wordToExamine = wordToExamineBuilder.toString();
+
+            long elapsedTimeInMillis = (System.nanoTime() - startTime) / 1000000;
+            Log.d(TAG, "inference time: " + elapsedTimeInMillis + " ms");
 
             myCallback.onCallBack(wordToExamine);
         }).addOnFailureListener(e -> {
