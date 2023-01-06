@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -59,10 +60,6 @@ dependencies {
     // permission management
     implementation 'com.github.lorenzofelletti:permissions:0.4.2'
 
-    // The GPU delegate library is optional. Depend on it as needed.
-
-
-
     def camerax_version = "1.1.0-beta01"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
@@ -71,7 +68,6 @@ dependencies {
 
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 
-
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
     implementation 'com.googlecode.json-simple:json-simple:1.1'
@@ -79,4 +75,12 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'org.osmdroid:osmdroid-android:6.1.14'
 
+    // ROOM database dependencies
+    def room_version = "2.4.3"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt "androidx.room:room-compiler:$room_version"
 }

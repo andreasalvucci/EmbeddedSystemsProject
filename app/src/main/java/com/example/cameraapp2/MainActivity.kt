@@ -35,6 +35,9 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.lorenzofelletti.permissions.PermissionManager
 import com.lorenzofelletti.permissions.dispatcher.dsl.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.chromium.net.CronetEngine
 import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
@@ -66,11 +69,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val executor
         get() = ContextCompat.getMainExecutor(this)
 
-    private val tperUtilities by lazy { TperUtilities(this) }
+    private lateinit var tperUtilities: TperUtilities
     private val permissionManager by lazy { PermissionManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // execute on io coroutine
+        CoroutineScope(Dispatchers.IO).launch {
+            tperUtilities = TperUtilities(this@MainActivity)
+        }
 
         // declarative permission flow
         permissionManager buildRequestResultsDispatcher {

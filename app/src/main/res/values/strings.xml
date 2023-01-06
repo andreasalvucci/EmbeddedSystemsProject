@@ -47,4 +47,5 @@
     <string name="position_rationale_dialog">Più risultati sono stati trovati per questa fermata. I permessi per la posizione sono necessari per permetterti di scelgliere la fermata a cui sei interessato</string>
     <string name="position_permission_denied_dialog_title">Impossibilità a procedere</string>
     <string name="position_permission_denied_dialog_message">Hai scelto di non concedere i permessi per la posizione, quindi non siamo in grado di fornirti quali sono i prossimi bus in arrivo per questa fermata.</string>
+    <string name="bus_stop_database_asset_path">database/bus_stops.db</string>
 </resources>

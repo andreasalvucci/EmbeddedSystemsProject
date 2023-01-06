@@ -1,13 +1,15 @@
 package com.example.cameraapp2.tper
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.example.cameraapp2.R
+import androidx.lifecycle.ViewModelProvider
+import com.example.cameraapp2.viewmodel.BusStopViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.osmdroid.util.GeoPoint
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
 import kotlin.math.floor
 
 /**
@@ -19,11 +21,24 @@ import kotlin.math.floor
  * @param context The context of the application.
  */
 class TperUtilities(context: Context) {
+    private val busStopViewModel: BusStopViewModel
     private var busStopDictionary: MutableMap<Int, String> = mutableMapOf()
     private var coordinates: MutableMap<Int, GeoPoint> = mutableMapOf()
 
     init {
-        loadData(context)
+        busStopViewModel =
+            ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as Application)
+                .create(BusStopViewModel::class.java)
+
+        // Load data from db
+        val data = busStopViewModel.readAllData
+
+        CoroutineScope(Dispatchers.Default).launch {
+            data.forEach { busStop ->
+                busStopDictionary[busStop.code] = busStop.name
+                coordinates[busStop.code] = GeoPoint(busStop.latitude, busStop.longitude)
+            }
+        }
     }
 
     /**
@@ -109,41 +124,6 @@ class TperUtilities(context: Context) {
             aPossibleBusStop.uppercase(),
             maxLevenshteinDistanceFromTarget(aPossibleBusStop)
         )
-    }
-
-    /**
-     * Loads the TPER stops data from file.
-     *
-     * @param context The context of the application.
-     */
-    private fun loadData(context: Context) {
-        coordinates = mutableMapOf()
-        try {
-            val res = context.resources
-            val inputStream = res.openRawResource(R.raw.fermate)
-            val isr = InputStreamReader(inputStream)
-            val br = BufferedReader(isr)
-            br.readLine() //skip the first line
-            var line: String?
-            while (br.readLine().also { line = it } != null) {
-                val data = line?.split(context.getString(R.string.tper_dictionary_separator))
-                    ?.toTypedArray()
-                if (data != null) {
-                    val stopCode = Integer.valueOf(data[0])
-                    val stopName = data[1]
-                    val latitude = data[6].replace(",", ".").toDouble()
-                    val longitude = data[7].replace(",", ".").toDouble()
-                    val stopGeoPoint = GeoPoint(latitude, longitude)
-                    coordinates[stopCode] = stopGeoPoint
-                    busStopDictionary[stopCode] = stopName
-                }
-            }
-            br.close()
-            isr.close()
-            inputStream.close()
-        } catch (e: IOException) {
-            Log.e(TAG, e.toString())
-        }
     }
 
     companion object {
