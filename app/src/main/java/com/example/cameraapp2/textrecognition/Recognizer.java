@@ -20,13 +20,7 @@ public class Recognizer {
         inputImage = InputImage.fromBitmap(image, 0);
     }
 
-    public int getStopNumber(RecognizerCallback myCallback) {
-        if (textRecognizer == null) {
-            return -1;
-        }
-
-        int stopNumber = 0;
-
+    public void getStopNumber(RecognizerCallback myCallback) {
         textRecognizer.process(inputImage).addOnSuccessListener(text -> {
             List<String> allWords = getWordsFromText(text);
             StringBuilder wordToExamineBuilder = new StringBuilder();
@@ -39,23 +33,21 @@ public class Recognizer {
             myCallback.onCallBack(wordToExamine);
         }).addOnFailureListener(e -> {
         });
-
-        return stopNumber;
     }
 
     private List<String> getWordsFromText(Text text) {
-        List<String> parole = new ArrayList<>();
+        List<String> words = new ArrayList<>();
         for (Text.TextBlock block : text.getTextBlocks()) {
             for (Text.Line line : block.getLines()) {
                 line.getBoundingBox();
                 for (Text.Element element : line.getElements()) {
                     String elementText = element.getText();
-                    parole.add(elementText);
+                    words.add(elementText);
                     element.getSymbols();
                 }
             }
         }
 
-        return parole;
+        return words;
     }
 }
