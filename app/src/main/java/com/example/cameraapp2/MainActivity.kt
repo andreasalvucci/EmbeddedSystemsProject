@@ -347,7 +347,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
 
                 else -> { // scan by stop name
-                    val recognizedStopName = tperUtilities.getMoreSimilarBusStop(recognized)
+                    val recognizedStopName = tperUtilities.getMostSimilarBusStopName(recognized)
 
                     if (recognizedStopName.isNotEmpty()) {
                         showRecognizedStopInToast(recognizedStopName)

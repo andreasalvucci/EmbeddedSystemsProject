@@ -53,26 +53,29 @@ class TperUtilities(context: Context) {
 
     /**
      * Returns the most similar bus stop name from a given string.
+     * The similarity is calculated using the Levenshtein distance algorithm, with a maximum distance
+     * of [stopNameMaxLevenshteinDistanceFromTarget]. The distance is calculated in a case-insensitive
+     * way.
      *
      * @param aPossibleBusStop name of a possible bus stop
      * @return the name of the most similar bus stop, or an empty string if no similar bus stop is found
      */
-    fun getMoreSimilarBusStop(aPossibleBusStop: String): String = when {
+    fun getMostSimilarBusStopName(aPossibleBusStop: String): String = when {
         aPossibleBusStop.isEmpty() -> ""
         busStopDictionary.containsValue(aPossibleBusStop) -> aPossibleBusStop
         else -> {
             Log.d(TAG, "must look for similarity")
 
-            findClosestMatch(aPossibleBusStop) ?: ""
+            findClosestMatch(
+                busStopDictionary.values,
+                aPossibleBusStop.uppercase(),
+                stopNameMaxLevenshteinDistanceFromTarget(aPossibleBusStop)
+            ) ?: ""
         }
     }
 
-    private fun getGeoPointByCode(code: Int): GeoPoint? {
-        return coordinates[code]
-    }
-
     fun getCoupleOfCoordinatesByStopName(stopName: String): List<GeoPoint> {
-        val codes = getCodesByStopName(getMoreSimilarBusStop(stopName))
+        val codes = getCodesByStopName(getMostSimilarBusStopName(stopName))
         val points: MutableList<GeoPoint> = mutableListOf()
         var point: GeoPoint?
         for (code in codes) {
@@ -82,6 +85,17 @@ class TperUtilities(context: Context) {
         return points
     }
 
+    /**
+     * Returns the most similar bus stop code from a given string.
+     * The similarity is calculated in two steps:
+     * 1. The string processed using [NumbersInferencePostProcessing.substitutionStep]
+     * 2. The Levenshtein distance is calculated between the processed string and the bus stop names
+     * with a maximum distance of [LEVENSHTEIN_MAX_DISTANCE_FOR_STOP_CODE_SEARCH]
+     *
+     * @param aPossibleBusCode name of a possible bus stop code
+     * @return the code of the most similar bus stop as a [String], or an empty string if no similar
+     * bus stop is found
+     */
     fun getMostSimilarStopCode(aPossibleBusCode: String): String {
         val processedCode: String =
             NumbersInferencePostProcessing.substitutionStep(aPossibleBusCode)
@@ -92,38 +106,28 @@ class TperUtilities(context: Context) {
         ) ?: ""
     }
 
+    /**
+     * Returns the list of bus stop codes from a given bus stop name.
+     * An empty list is returned if [stopName] is not found.
+     *
+     * @param stopName the name of the bus stop
+     * @return the list of bus stop codes
+     */
     fun getCodesByStopName(stopName: String): List<Int> {
-        Log.d(
-            TAG, "getCodesByStopName - Received:$stopName"
-        )
+        Log.d(TAG, "getCodesByStopName - Received:$stopName")
         val codes: MutableList<Int> = ArrayList()
         for ((key, value) in busStopDictionary) {
             if (stopName == value) {
                 codes.add(key)
             }
         }
-        Log.d(
-            TAG, "getCodesByStopName - Found:$codes"
-        )
+        Log.d(TAG, "getCodesByStopName - Found:$codes")
 
         return codes
     }
 
-    /**
-     * Returns the most similar bus stop name to [aPossibleBusStop] using the Levenshtein distance.
-     *
-     * [aPossibleBusStop] is compared in uppercase, since the bus stop names are all uppercase,
-     * and we don't want to consider the case in the Levenshtein distance.
-     *
-     * @param aPossibleBusStop
-     * @return the most similar bus stop name, or null if no similar bus stop is found
-     */
-    private fun findClosestMatch(aPossibleBusStop: String): String? {
-        return Companion.findClosestMatch(
-            busStopDictionary.values,
-            aPossibleBusStop.uppercase(),
-            maxLevenshteinDistanceFromTarget(aPossibleBusStop)
-        )
+    private fun getGeoPointByCode(code: Int): GeoPoint? {
+        return coordinates[code]
     }
 
     companion object {
@@ -139,26 +143,27 @@ class TperUtilities(context: Context) {
          * Maximum Levenshtein distance for a possible stop code from an actual stop code to be
          * considered a match.
          */
-        private const val LEVENSHTEIN_MAX_DISTANCE_FOR_STOP_CODE_SEARCH = 1
+        const val LEVENSHTEIN_MAX_DISTANCE_FOR_STOP_CODE_SEARCH = 1
 
         /**
          * Returns the maximum Levenshtein from [target] allowed for a string to be considered a
-         * valid match.
+         * valid match in the case of a bus stop name search.
          *
          * @param target The target string.
          * @return The maximum Levenshtein distance from [target].
          */
-        private fun maxLevenshteinDistanceFromTarget(target: String): Int {
+        fun stopNameMaxLevenshteinDistanceFromTarget(target: String): Int {
             return floor(target.length * LEVENSHTEIN_MAX_DISTANCE_RATIO).toInt()
         }
 
         /**
          * Searches for the closest match of a string to be searched in a list of strings.
-         * It uses the Levenshtein distance algorithm, with a maximum distance obtained by
-         * [maxLevenshteinDistanceFromTarget].
+         * It uses the Levenshtein distance algorithm, with a configurable maximum distance.
          *
          * @param collection The collection in which to search for the closest match.
          * @param toSearch The target string.
+         * @param maxDistance The maximum Levenshtein distance from [toSearch] allowed for a string
+         * to be considered a valid match.
          *
          * @return The closest match, i.e the string in [collection] that is the closest to
          * [toSearch], or null if no match is found.
