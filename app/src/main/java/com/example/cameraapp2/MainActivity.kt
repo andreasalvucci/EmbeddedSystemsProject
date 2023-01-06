@@ -325,13 +325,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     fun runInference(image: Bitmap?) {
+        if (image == null) {
+            Log.e(TAG, "Null image")
+            return
+        }
+
         val busCodeScanning = !scanByStopNameSwitch.isChecked
 
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        InputImage.fromBitmap(image!!, 0)
+        InputImage.fromBitmap(image, 0)
 
         val recognizer = Recognizer(image)
-        recognizer.getStopNumber { recognized ->
+        recognizer.getStopNumber { recognized: String ->
             Log.d(TAG, "runInference: $recognized")
 
             when {

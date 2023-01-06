@@ -111,11 +111,10 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
 
     private List<List<String>> getMapFromJson(String jsonString) throws JSONException {
         List<List<String>> lists = new ArrayList<>();
-        Log.i("JSON sent", jsonString);
+
         JSONObject json = new JSONObject(jsonString);
         JSONObject message = json.getJSONObject("message");
         JSONArray buses = message.getJSONArray("Autobus");
-
 
         for (int i = 0; i < buses.length(); i++) {
             String line = buses.getJSONObject(i).getString("Line");

@@ -1,53 +1,45 @@
-package com.example.cameraapp2.textrecognition;
+package com.example.cameraapp2.textrecognition
 
-import android.graphics.Bitmap;
+import android.graphics.Bitmap
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.text.Text;
-import com.google.mlkit.vision.text.TextRecognition;
-import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+class Recognizer(image: Bitmap) {
+    private val textRecognizer: TextRecognizer =
+        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val inputImage: InputImage
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Recognizer {
-    private final TextRecognizer textRecognizer;
-    private final InputImage inputImage;
-
-    public Recognizer(Bitmap image) {
-        textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        inputImage = InputImage.fromBitmap(image, 0);
+    init {
+        inputImage = InputImage.fromBitmap(image, 0)
     }
 
-    public void getStopNumber(RecognizerCallback myCallback) {
-        textRecognizer.process(inputImage).addOnSuccessListener(text -> {
-            List<String> allWords = getWordsFromText(text);
-            StringBuilder wordToExamineBuilder = new StringBuilder();
-
-            for (String word : allWords) {
-                wordToExamineBuilder.append(word).append(" ");
+    fun getStopNumber(myCallback: (String) -> Unit) {
+        textRecognizer.process(inputImage).addOnSuccessListener { text: Text ->
+            val allWords = getWordsFromText(text)
+            val wordToExamineBuilder = StringBuilder()
+            for (word in allWords) {
+                wordToExamineBuilder.append(word).append(" ")
             }
-            String wordToExamine = wordToExamineBuilder.toString().trim();
-
-            myCallback.onCallBack(wordToExamine);
-        }).addOnFailureListener(e -> {
-        });
+            val wordToExamine = wordToExamineBuilder.toString().trim { it <= ' ' }
+            myCallback(wordToExamine)
+        }.addOnFailureListener { }
     }
 
-    private List<String> getWordsFromText(Text text) {
-        List<String> words = new ArrayList<>();
-        for (Text.TextBlock block : text.getTextBlocks()) {
-            for (Text.Line line : block.getLines()) {
-                line.getBoundingBox();
-                for (Text.Element element : line.getElements()) {
-                    String elementText = element.getText();
-                    words.add(elementText);
-                    element.getSymbols();
+    private fun getWordsFromText(text: Text): List<String> {
+        val words: MutableList<String> = ArrayList()
+        for (block in text.textBlocks) {
+            for (line in block.lines) {
+                line.boundingBox
+                for (element in line.elements) {
+                    val elementText = element.text
+                    words.add(elementText)
+                    element.symbols
                 }
             }
         }
-
-        return words;
+        return words
     }
 }
