@@ -85,7 +85,7 @@ class TperUtilities(context: Context) {
     fun getMostSimilarStopCode(aPossibleBusCode: String): String {
         val processedCode: String =
             NumbersInferencePostProcessing.substitutionStep(aPossibleBusCode)
-        return Companion.findClosestMatch(
+        return findClosestMatch(
             busStopDictionary.keys.map { it.toString() },
             processedCode,
             LEVENSHTEIN_MAX_DISTANCE_FOR_STOP_CODE_SEARCH
