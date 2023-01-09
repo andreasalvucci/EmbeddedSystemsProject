@@ -34,10 +34,11 @@ class MapBottomSheetDialog(
     codes: List<Int>,
     private val tper: TperUtilities
 ) : BottomSheetDialogFragment() {
-    var cronetEngine: CronetEngine
+    private var cronetEngine: CronetEngine
     private val items = ArrayList<OverlayItem>()
     private lateinit var waitingForTperResponse: TextView
     private lateinit var progressBar: ProgressBar
+    private val executor: Executor = Executors.newSingleThreadExecutor()
 
     init {
         val myBuilder = CronetEngine.Builder(contextMainActivity)
@@ -47,12 +48,11 @@ class MapBottomSheetDialog(
             val point = points[i]
             items.add(OverlayItem(code.toString(), "Description", point))
         }
+
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val v = inflater.inflate(R.layout.map_bottom_sheet_layout, container, false)
 
@@ -69,19 +69,17 @@ class MapBottomSheetDialog(
         mapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT)
         mapView.setMultiTouchControls(true)
         val mapController = mapView.controller
-        mapController.setZoom(20.0)
+        mapController.setZoom(DEFAULT_ZOOM_LEVEL)
         val startPoint = GeoPoint(points[0])
         mapController.setCenter(startPoint)
-        val itemizedOverlay: ItemizedOverlay<OverlayItem> = ItemizedOverlayWithFocus(items,
-            object : OnItemGestureListener<OverlayItem> {
+        val itemizedOverlay: ItemizedOverlay<OverlayItem> = ItemizedOverlayWithFocus(
+            items, object : OnItemGestureListener<OverlayItem> {
                 override fun onItemSingleTapUp(index: Int, item: OverlayItem): Boolean {
                     requestStopBusesTimes(item, busStopMarker)
                     return true
                 }
 
-                override fun onItemLongPress(index: Int, item: OverlayItem): Boolean {
-                    return false
-                }
+                override fun onItemLongPress(index: Int, item: OverlayItem): Boolean = false
             }, requireContext()
         )
 
@@ -93,42 +91,41 @@ class MapBottomSheetDialog(
         val scaleBarOverlay = ScaleBarOverlay(mapView)
         scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, 10)
         mapView.overlays.add(scaleBarOverlay)
-        val mLocationOverlay = MyLocationNewOverlay(
-            GpsMyLocationProvider(
-                contextMainActivity
-            ), mapView
+
+        val myLocationOverlay = MyLocationNewOverlay(
+            GpsMyLocationProvider(contextMainActivity), mapView
         )
-        mLocationOverlay.enableMyLocation()
-        mapView.overlays.add(mLocationOverlay)
+        myLocationOverlay.enableMyLocation()
+
+        mapView.overlays.add(myLocationOverlay)
         mapView.overlays.add(itemizedOverlay)
 
         return v
     }
 
     private fun requestStopBusesTimes(
-        item: OverlayItem,
-        busStopMarker: Drawable?
+        item: OverlayItem, busStopMarker: Drawable?
     ) {
         waitingForTperResponse.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
         val code = item.title.toInt()
         val stopName = tper.getBusStopByCode(code)
         item.setMarker(busStopMarker)
-        val executor: Executor = Executors.newSingleThreadExecutor()
         val url = "${MyUrlRequestCallback.HOSTNAME}/fermata/$code"
         Log.d(TAG, "URL: $url")
-        val requestBuilder = cronetEngine.newUrlRequestBuilder(
-            url,
-            MyUrlRequestCallback(
+        val request = cronetEngine.newUrlRequestBuilder(
+            url, MyUrlRequestCallback(
                 requireActivity().supportFragmentManager,
-                stopName, progressBar, waitingForTperResponse
+                stopName,
+                progressBar,
+                waitingForTperResponse
             ), executor
-        )
-        val request = requestBuilder.build()
+        ).build()
         request.start()
     }
 
     companion object {
         private val TAG = MapBottomSheetDialog::class.java.simpleName
+        private const val DEFAULT_ZOOM_LEVEL = 20.0
     }
 }

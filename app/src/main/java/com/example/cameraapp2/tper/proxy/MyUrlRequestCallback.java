@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.cameraapp2.BottomSheetDialog;
@@ -35,7 +36,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     private final ProgressBar progressBar;
     private final TextView waitingForTperResponse;
 
-    public MyUrlRequestCallback(FragmentManager fm, String stopName, ProgressBar progressBar, TextView waitingForTperResponse) {
+    public MyUrlRequestCallback(@NonNull FragmentManager fm, @NonNull String stopName, @NonNull ProgressBar progressBar, @NonNull TextView waitingForTperResponse) {
         this.supportFragmentManager = fm;
         this.stopName = stopName;
         this.progressBar = progressBar;
@@ -45,7 +46,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
 
 
     @Override
-    public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
+    public void onRedirectReceived(@NonNull UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
         Log.i(TAG, "onRedirectReceived method called.");
         // You should call the request.followRedirect() method to continue
         // processing the request.
@@ -53,7 +54,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     }
 
     @Override
-    public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
+    public void onResponseStarted(@NonNull UrlRequest request, UrlResponseInfo info) {
         Log.i(TAG, "onResponseStarted method called.");
         // You should call the request.read() method before the request can be
         // further processed. The following instruction provides a ByteBuffer object
@@ -63,7 +64,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
     }
 
     @Override
-    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws JSONException {
+    public void onReadCompleted(@NonNull UrlRequest request, UrlResponseInfo info, @NonNull ByteBuffer byteBuffer) throws JSONException {
         Log.i(TAG, "onReadCompleted method called.");
 
         byteBuffer.clear();
@@ -89,8 +90,7 @@ public class MyUrlRequestCallback extends UrlRequest.Callback {
         try {
             results.put("body", responseBodyString);
         } catch (JSONException e) {
-            Log.e(TAG, "JSON EXCEPTION exception");
-            e.printStackTrace();
+            Log.e(TAG, "JSON EXCEPTION exception", e);
         }
 
         progressBar.setVisibility(View.INVISIBLE);
