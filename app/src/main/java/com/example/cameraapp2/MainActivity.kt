@@ -354,7 +354,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 else -> { // scan by stop name
                     val recognizedStopName = tperUtilities.getMostSimilarBusStopName(recognized)
 
-                    if (recognizedStopName.isNotEmpty()) {
+                    if (recognizedStopName.isEmpty()) {
+                        busStopRecognitionUnsuccessful()
+                    } else {
                         showRecognizedStopInToast(recognizedStopName)
                         makeCropAreaGreenFor()
 
@@ -363,8 +365,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         val busStopsCodes = tperUtilities.getCodesByStopName(recognizedStopName)
                         dispatchStopsCodesResults(busStopsCodes, busStopsCoordinates)
                         makeProgressBarInvisibleAndCropAreaVisible()
-                    } else {
-                        busStopRecognitionUnsuccessful()
                     }
                 }
             }
