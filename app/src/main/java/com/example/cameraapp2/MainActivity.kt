@@ -85,9 +85,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             withRequestCode(PERMISSION_REQUEST_CODE) {
                 checkPermissions(scanImagePermissions)
                 showRationaleDialog(
-                    message = getString(R.string.camera_rationale_dialog),
-                    positiveButtonText = getString(R.string.proceed_string),
-                    negativeButtonText = getString(R.string.dismiss_string)
+                    message = getString(R.string.camera_rationale_dialog)
                 )
                 doOnDenied {
                     showPermissionsDeniedDialog(this@MainActivity)
@@ -96,9 +94,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             withRequestCode(POSITION_REQUEST_CODE) {
                 checkPermissions(positionPermissions)
                 showRationaleDialog(
-                    message = getString(R.string.position_rationale_dialog),
-                    positiveButtonText = getString(R.string.proceed_string),
-                    negativeButtonText = getString(R.string.dismiss_string)
+                    message = getString(R.string.position_rationale_dialog)
                 )
                 doOnDenied {
                     showPositionPermissionsDeniedDialog(this@MainActivity)
